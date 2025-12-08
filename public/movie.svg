@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Movie clapper">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#22d3ee"/>
+    </linearGradient>
+  </defs>
+  <rect x="6" y="18" width="52" height="34" rx="4" fill="#0f172a" stroke="url(#g)" stroke-width="3"/>
+  <path d="M6 22h52v-8a4 4 0 0 0-4-4H10a4 4 0 0 0-4 4z" fill="url(#g)"/>
+  <path d="M12 10l7 12m6-12l7 12m6-12l7 12" stroke="#e5e7eb" stroke-width="3" stroke-linecap="round"/>
+  <rect x="18" y="32" width="28" height="10" rx="2" fill="#111827" stroke="#22d3ee" stroke-width="2"/>
+  <circle cx="20" cy="42" r="2" fill="#22d3ee"/>
+  <circle cx="44" cy="42" r="2" fill="#22d3ee"/>
+</svg>
+
