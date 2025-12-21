@@ -1,8 +1,10 @@
 import { useMemo, useState } from 'react';
+import { useFavorites } from '../context/FavoritesContext';
 import MovieCard from '../components/MovieCard';
 
 export default function Home({ movies, deleteMovie }) {
     const [filter, setFilter] = useState('');
+    const { favorites, removeFavorite } = useFavorites();
 
     const userMovies = useMemo(
         () => movies.filter((movie) => movie.source === 'user'),
@@ -22,6 +24,28 @@ export default function Home({ movies, deleteMovie }) {
     return (
         <div className="page-container">
             <h1>My List</h1>
+
+            {favorites.length > 0 && (
+                <section className="section">
+                    <div className="section-header">
+                        <h2>⭐ My Favorites</h2>
+                        <p className="section-subtitle">Your favorite movies</p>
+                    </div>
+
+                    <div className="movies-grid">
+                        {favorites.map(movie => (
+                            <MovieCard
+                                key={movie.id}
+                                title={movie.title}
+                                rating={movie.rating}
+                                genre={movie.genre}
+                                description={movie.description}
+                                onDelete={() => removeFavorite(movie.id)}
+                            />
+                        ))}
+                    </div>
+                </section>
+            )}
 
             <section className="section">
                 <div className="section-header">

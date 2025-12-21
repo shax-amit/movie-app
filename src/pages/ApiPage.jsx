@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useFavorites } from '../context/FavoritesContext';
 
 export default function ApiPage() {
     const [movies, setMovies] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const { toggleFavorite, isFavorite } = useFavorites();
 
     useEffect(() => {
         const controller = new AbortController();
@@ -46,33 +48,55 @@ export default function ApiPage() {
             <p className="api-note">Data fetched from Studio Ghibli public API</p>
 
             <div className="movies-grid">
-                {movies.map(movie => (
-                    <div key={movie.id} className="movie-card api-card">
-                        <h3>{movie.title}</h3>
-                        <div className="movie-info">
-                            <span className="rating">⭐ {movie.rt_score}/100</span>
-                            <span className="genre">{movie.release_date}</span>
+                {movies.map(movie => {
+                    const favorite = isFavorite(movie.id);
+                    const movieData = {
+                        id: movie.id,
+                        title: movie.title,
+                        rating: Math.round(movie.rt_score / 10),
+                        genre: movie.release_date,
+                        description: movie.description,
+                        source: 'api'
+                    };
+
+                    return (
+                        <div key={movie.id} className="movie-card api-card">
+                            <div className="card-top">
+                                <h3>{movie.title}</h3>
+                                <button
+                                    type="button"
+                                    className={`favorite-btn ${favorite ? 'active' : ''}`}
+                                    onClick={() => toggleFavorite(movieData)}
+                                    title={favorite ? 'Remove from favorites' : 'Add to favorites'}
+                                >
+                                    {favorite ? '⭐' : '☆'}
+                                </button>
+                            </div>
+                            <div className="movie-info">
+                                <span className="rating">⭐ {movie.rt_score}/100</span>
+                                <span className="genre">{movie.release_date}</span>
+                            </div>
+                            {movie.image && (
+                                <img
+                                    src={movie.image}
+                                    alt={`${movie.title} poster`}
+                                    className="api-poster"
+                                    loading="lazy"
+                                />
+                            )}
+                            <p className="description">{movie.description}</p>
+                            <p className="api-link">
+                                <a
+                                    href={`https://www.imdb.com/find/?q=${encodeURIComponent(movie.title)}&s=tt`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                >
+                                    View reviews on IMDb
+                                </a>
+                            </p>
                         </div>
-                        {movie.image && (
-                            <img
-                                src={movie.image}
-                                alt={`${movie.title} poster`}
-                                className="api-poster"
-                                loading="lazy"
-                            />
-                        )}
-                        <p className="description">{movie.description}</p>
-                        <p className="api-link">
-                            <a
-                                href={`https://www.imdb.com/find/?q=${encodeURIComponent(movie.title)}&s=tt`}
-                                target="_blank"
-                                rel="noreferrer"
-                            >
-                                View reviews on IMDb
-                            </a>
-                        </p>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
         </div>
     );

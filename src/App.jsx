@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { FavoritesProvider } from './context/FavoritesContext';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import FormPage from './pages/FormPage';
 import ApiPage from './pages/ApiPage';
+import NotFound from './pages/NotFound';
 
 const STORAGE_KEY = 'user-movies';
 
@@ -87,18 +89,21 @@ function App() {
   };
 
   return (
-    <Router>
-      <div className="app">
-        <Navbar />
-        <main className="main-content">
-          <Routes>
-            <Route path="/" element={<Home movies={movies} deleteMovie={deleteMovie} />} />
-            <Route path="/form" element={<FormPage addMovie={addMovie} />} />
-            <Route path="/api" element={<ApiPage />} />
-          </Routes>
-        </main>
-      </div>
-    </Router>
+    <FavoritesProvider>
+      <Router>
+        <div className="app">
+          <Navbar />
+          <main className="main-content">
+            <Routes>
+              <Route path="/" element={<Home movies={movies} deleteMovie={deleteMovie} />} />
+              <Route path="/form" element={<FormPage addMovie={addMovie} />} />
+              <Route path="/api" element={<ApiPage />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </main>
+        </div>
+      </Router>
+    </FavoritesProvider>
   );
 }
 

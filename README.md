@@ -1,10 +1,58 @@
-# Movie Website Project (HW1)
+# Movie Website Project (HW1 & HW2)
 
 This is a React application for managing and viewing movies, created as part of the "Methods in Web Development" course.
 
+## Routing (React Router)
+
+The application uses React Router for navigation between pages. All routes are defined in `src/App.jsx`:
+
+- **`/`** → Home Page - Displays user's movie list and favorites
+- **`/form`** → Form Page - Add new movies/reviews
+- **`/api`** → API Page - Browse movies from Studio Ghibli API
+- **`/*`** (any other path) → 404 Not Found Page - Shows error message for unknown routes
+
+Navigation is handled through the `Navbar` component using React Router's `<Link>` components, which update the URL without page reload.
+
+## Global State (React Context)
+
+The application uses **FavoritesContext** to manage favorite movies globally across all components.
+
+### Context Details
+
+- **File:** `src/context/FavoritesContext.jsx`
+- **What it stores:** An array of favorite movie objects
+- **Storage:** Favorites are persisted in `localStorage` (key: `movie-favorites`)
+
+### Context API
+
+The context provides the following functions and data:
+
+- `favorites` - Array of favorite movie objects
+- `favoritesCount` - Number of favorites (for display)
+- `addFavorite(movie)` - Add a movie to favorites
+- `removeFavorite(movieId)` - Remove a movie from favorites
+- `isFavorite(movieId)` - Check if a movie is already favorited
+- `toggleFavorite(movie)` - Toggle favorite status (add/remove)
+
+### Usage in Components
+
+1. **API Page (`src/pages/ApiPage.jsx`):**
+   - Each movie card has a star button (☆/⭐) to add/remove from favorites
+   - Shows visual feedback when a movie is favorited
+   - Uses `toggleFavorite()` and `isFavorite()` functions
+
+2. **Home Page (`src/pages/Home.jsx`):**
+   - Displays a "⭐ My Favorites" section at the top (when favorites exist)
+   - Shows all favorited movies with ability to remove them
+   - Uses `favorites` array and `removeFavorite()` function
+
+3. **Navbar (`src/components/Navbar.jsx`):**
+   - Displays favorites count badge: "⭐ Favorites (X)" when count > 0
+   - Uses `favoritesCount` from context
+
 ## Project Structure & Pages
 
-The application consists of 3 main pages, corresponding to the assignment requirements:
+The application consists of 4 main pages:
 
 1.  **Home Page (Movie List)**
 
@@ -28,6 +76,14 @@ The application consists of 3 main pages, corresponding to the assignment requir
     - **Features:**
       - Handles Loading and Error states.
       - Renders fetched data in a grid layout.
+      - **Add to Favorites:** Each movie has a star button to add/remove from favorites (uses Context).
+
+4.  **Not Found Page (404)**
+    - **File:** `src/pages/NotFound.jsx`
+    - **Description:** Displays a 404 error page for unknown routes.
+    - **Features:**
+      - Shows friendly error message.
+      - Link to return to home page.
 
 ## How to Run
 
@@ -50,5 +106,7 @@ The application consists of 3 main pages, corresponding to the assignment requir
 
 - React
 - Vite
-- React Router DOM
+- React Router DOM (for routing)
+- React Context API (for global state management)
 - CSS (Custom styling)
+- localStorage (for persisting favorites)

@@ -90,6 +90,11 @@ body {
   background: var(--surface);
 }
 
+.favorites-link {
+  color: #fbbf24 !important;
+  border-color: rgba(251, 191, 36, 0.3) !important;
+}
+
 /* Main Content */
 .main-content {
   padding: 2.5rem 2rem 3rem;
@@ -210,6 +215,34 @@ body {
 .delete-btn:hover {
   border-color: #f87171;
   background: rgba(248, 113, 113, 0.12);
+}
+
+.favorite-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: #fbbf24;
+  border-radius: 999px;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.favorite-btn:hover {
+  border-color: #fbbf24;
+  background: rgba(251, 191, 36, 0.12);
+  transform: scale(1.1);
+}
+
+.favorite-btn.active {
+  color: #fbbf24;
+  border-color: #fbbf24;
+  background: rgba(251, 191, 36, 0.15);
 }
 
 .movie-info {
@@ -373,4 +406,51 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Not Found Page */
+.not-found {
+  text-align: center;
+  padding: 4rem 2rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.not-found h1 {
+  font-size: 6rem;
+  margin: 0;
+  background: linear-gradient(120deg, var(--primary), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 800;
+}
+
+.not-found h2 {
+  font-size: 2rem;
+  margin: 0.5rem 0 1rem;
+  color: var(--heading);
+}
+
+.not-found p {
+  color: var(--muted);
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+}
+
+.back-home-btn {
+  display: inline-block;
+  padding: 0.95rem 2rem;
+  background: linear-gradient(120deg, var(--primary), #8b5cf6);
+  color: white;
+  text-decoration: none;
+  border-radius: 14px;
+  font-weight: 700;
+  box-shadow: 0 12px 30px rgba(124, 58, 237, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.back-home-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 38px rgba(124, 58, 237, 0.45);
 }

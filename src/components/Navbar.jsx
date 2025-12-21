@@ -1,6 +1,9 @@
 import { Link } from 'react-router-dom';
+import { useFavorites } from '../context/FavoritesContext';
 
 export default function Navbar() {
+  const { favoritesCount } = useFavorites();
+
   return (
     <nav className="navbar">
       <div className="nav-brand">
@@ -11,6 +14,11 @@ export default function Navbar() {
         <Link to="/">Home</Link>
         <Link to="/form">Add Movie</Link>
         <Link to="/api">External API</Link>
+        {favoritesCount > 0 && (
+          <Link to="/" className="favorites-link">
+            ⭐ Favorites ({favoritesCount})
+          </Link>
+        )}
       </div>
     </nav>
   );
