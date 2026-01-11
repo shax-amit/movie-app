@@ -1,10 +1,18 @@
 import { useMemo, useState } from 'react';
-import { useFavorites } from '../context/FavoritesContext';
+import { useSelector, useDispatch } from 'react-redux';
+import { selectFavorites, removeFavorite, toggleFavorite } from '../store/favoritesSlice';
+import { useApi } from '../hooks/useApi';
 import MovieCard from '../components/MovieCard';
 
 export default function Home({ movies, deleteMovie }) {
     const [filter, setFilter] = useState('');
-    const { favorites, removeFavorite } = useFavorites();
+    const favorites = useSelector(selectFavorites);
+    const dispatch = useDispatch();
+
+    // Use useApi hook to fetch trending movie recommendations
+    const { data: trendingData, loading: trendingLoading } = useApi(
+        'https://ghibliapi.vercel.app/films?limit=3'
+    );
 
     const userMovies = useMemo(
         () => movies.filter((movie) => movie.source === 'user'),
@@ -21,6 +29,14 @@ export default function Home({ movies, deleteMovie }) {
         movie.genre.toLowerCase().includes(filter.toLowerCase())
     );
 
+    const handleToggleFavorite = (movie) => {
+        dispatch(toggleFavorite(movie));
+    };
+
+    const isFavoriteMovie = (movieId) => {
+        return favorites.some((fav) => fav.id === movieId);
+    };
+
     return (
         <div className="page-container">
             <h1>My List</h1>
@@ -36,14 +52,54 @@ export default function Home({ movies, deleteMovie }) {
                         {favorites.map(movie => (
                             <MovieCard
                                 key={movie.id}
+                                id={movie.id}
                                 title={movie.title}
                                 rating={movie.rating}
                                 genre={movie.genre}
                                 description={movie.description}
-                                onDelete={() => removeFavorite(movie.id)}
+                                onDelete={() => dispatch(removeFavorite(movie.id))}
+                                onFavoriteToggle={() => handleToggleFavorite(movie)}
+                                isFavorite={true}
                             />
                         ))}
                     </div>
+                </section>
+            )}
+
+            {trendingData && trendingData.length > 0 && (
+                <section className="section">
+                    <div className="section-header">
+                        <h2>🔥 Trending Now</h2>
+                        <p className="section-subtitle">Popular recommendations</p>
+                    </div>
+                    {trendingLoading ? (
+                        <div className="loading">Loading recommendations...</div>
+                    ) : (
+                        <div className="movies-grid">
+                            {trendingData.map(movie => {
+                                const movieData = {
+                                    id: movie.id,
+                                    title: movie.title,
+                                    rating: Math.round(movie.rt_score / 10),
+                                    genre: movie.release_date,
+                                    description: movie.description?.substring(0, 100) + '...',
+                                    source: 'api'
+                                };
+                                return (
+                                    <MovieCard
+                                        key={movie.id}
+                                        id={movie.id}
+                                        title={movie.title}
+                                        rating={Math.round(movie.rt_score / 10)}
+                                        genre={movie.release_date}
+                                        description={movie.description?.substring(0, 100) + '...'}
+                                        onFavoriteToggle={() => handleToggleFavorite(movieData)}
+                                        isFavorite={isFavoriteMovie(movie.id)}
+                                    />
+                                );
+                            })}
+                        </div>
+                    )}
                 </section>
             )}
 
@@ -67,11 +123,14 @@ export default function Home({ movies, deleteMovie }) {
                     {filteredUserMovies.map(movie => (
                         <MovieCard
                             key={movie.id}
+                            id={movie.id}
                             title={movie.title}
                             rating={movie.rating}
                             genre={movie.genre}
                             description={movie.description}
                             onDelete={() => deleteMovie?.(movie.id)}
+                            onFavoriteToggle={() => handleToggleFavorite(movie)}
+                            isFavorite={isFavoriteMovie(movie.id)}
                         />
                     ))}
                     {filteredUserMovies.length === 0 && (
@@ -93,10 +152,13 @@ export default function Home({ movies, deleteMovie }) {
                     {seedMovies.map(movie => (
                         <MovieCard
                             key={movie.id}
+                            id={movie.id}
                             title={movie.title}
                             rating={movie.rating}
                             genre={movie.genre}
                             description={movie.description}
+                            onFavoriteToggle={() => handleToggleFavorite(movie)}
+                            isFavorite={isFavoriteMovie(movie.id)}
                         />
                     ))}
                 </div>

@@ -1,6 +1,10 @@
 import { useState } from 'react';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 
 export default function FormPage({ addMovie }) {
+    // Use useLocalStorage for fake logged-in user
+    const [user, setUser] = useLocalStorage('fake-user', null);
+    
     const [formData, setFormData] = useState({
         title: '',
         rating: '',
@@ -59,9 +63,30 @@ export default function FormPage({ addMovie }) {
         }));
     };
 
+    const handleLogin = () => {
+        const username = prompt('Enter username:');
+        if (username) {
+            setUser({ name: username, loggedInAt: new Date().toISOString() });
+        }
+    };
+
+    const handleLogout = () => {
+        setUser(null);
+    };
+
     return (
         <div className="page-container">
-            <h1>Add New Movie</h1>
+            <div className="form-header">
+                <h1>Add New Movie</h1>
+                {user ? (
+                    <div className="user-info">
+                        <span>Logged in as: <strong>{user.name}</strong></span>
+                        <button onClick={handleLogout} className="logout-btn">Logout</button>
+                    </div>
+                ) : (
+                    <button onClick={handleLogin} className="login-btn">Login</button>
+                )}
+            </div>
             <form onSubmit={handleSubmit} className="movie-form">
                 <div className="form-group">
                     <label>Movie Title:</label>

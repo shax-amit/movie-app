@@ -1,50 +1,43 @@
-import { useState, useEffect } from 'react';
-import { useFavorites } from '../context/FavoritesContext';
+import { useSelector, useDispatch } from 'react-redux';
+import { toggleFavorite } from '../store/favoritesSlice';
+import { useApi } from '../hooks/useApi';
+import MovieCard from '../components/MovieCard';
 
 export default function ApiPage() {
-    const [movies, setMovies] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const { toggleFavorite, isFavorite } = useFavorites();
+    const dispatch = useDispatch();
+    const favorites = useSelector((state) => state.favorites.items);
+    
+    // Use useApi hook for fetching movies
+    const { data: moviesData, loading, error, refetch } = useApi(
+        'https://ghibliapi.vercel.app/films?limit=12'
+    );
 
-    useEffect(() => {
-        const controller = new AbortController();
+    const handleToggleFavorite = (movieData) => {
+        dispatch(toggleFavorite(movieData));
+    };
 
-        async function loadMovies() {
-            try {
-                setLoading(true);
-                setError(null);
-
-                // Studio Ghibli public API (no auth)
-                const res = await fetch('https://ghibliapi.vercel.app/films?limit=12', {
-                    signal: controller.signal
-                });
-
-                if (!res.ok) {
-                    throw new Error('Failed to fetch movies');
-                }
-
-                const data = await res.json();
-                setMovies(data);
-            } catch (err) {
-                if (err.name !== 'AbortError') {
-                    setError(err.message || 'Something went wrong');
-                }
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        loadMovies();
-        return () => controller.abort();
-    }, []);
+    const isFavorite = (movieId) => {
+        return favorites.some((fav) => fav.id === movieId);
+    };
 
     if (loading) return <div className="loading">Loading movies from API...</div>;
-    if (error) return <div className="error-display">Error: {error}</div>;
+    if (error) return (
+        <div className="page-container">
+            <div className="error-display">Error: {error}</div>
+            <button onClick={refetch} className="retry-btn">Retry</button>
+        </div>
+    );
+
+    const movies = moviesData || [];
 
     return (
         <div className="page-container">
-            <h1>External Movie Database</h1>
+            <div className="page-header">
+                <h1>External Movie Database</h1>
+                <button onClick={refetch} className="refetch-btn" title="Refresh movies">
+                    🔄 Refresh
+                </button>
+            </div>
             <p className="api-note">Data fetched from Studio Ghibli public API</p>
 
             <div className="movies-grid">
@@ -60,41 +53,18 @@ export default function ApiPage() {
                     };
 
                     return (
-                        <div key={movie.id} className="movie-card api-card">
-                            <div className="card-top">
-                                <h3>{movie.title}</h3>
-                                <button
-                                    type="button"
-                                    className={`favorite-btn ${favorite ? 'active' : ''}`}
-                                    onClick={() => toggleFavorite(movieData)}
-                                    title={favorite ? 'Remove from favorites' : 'Add to favorites'}
-                                >
-                                    {favorite ? '⭐' : '☆'}
-                                </button>
-                            </div>
-                            <div className="movie-info">
-                                <span className="rating">⭐ {movie.rt_score}/100</span>
-                                <span className="genre">{movie.release_date}</span>
-                            </div>
-                            {movie.image && (
-                                <img
-                                    src={movie.image}
-                                    alt={`${movie.title} poster`}
-                                    className="api-poster"
-                                    loading="lazy"
-                                />
-                            )}
-                            <p className="description">{movie.description}</p>
-                            <p className="api-link">
-                                <a
-                                    href={`https://www.imdb.com/find/?q=${encodeURIComponent(movie.title)}&s=tt`}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                >
-                                    View reviews on IMDb
-                                </a>
-                            </p>
-                        </div>
+                        <MovieCard
+                            key={movie.id}
+                            id={movie.id}
+                            title={movie.title}
+                            rating={Math.round(movie.rt_score / 10)}
+                            genre={movie.release_date}
+                            description={movie.description}
+                            image={movie.image}
+                            imdbLink={`https://www.imdb.com/find/?q=${encodeURIComponent(movie.title)}&s=tt`}
+                            onFavoriteToggle={() => handleToggleFavorite(movieData)}
+                            isFavorite={favorite}
+                        />
                     );
                 })}
             </div>

@@ -1,8 +1,23 @@
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useFavorites } from '../context/FavoritesContext';
+import { useSelector } from 'react-redux';
+import { selectFavoritesCount } from '../store/favoritesSlice';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 
 export default function Navbar() {
-  const { favoritesCount } = useFavorites();
+  const favoritesCount = useSelector(selectFavoritesCount);
+  const [theme, setTheme] = useLocalStorage('theme', 'light');
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
+  };
+
+  // Apply theme on mount
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
 
   return (
     <nav className="navbar">
@@ -19,6 +34,9 @@ export default function Navbar() {
             ⭐ Favorites ({favoritesCount})
           </Link>
         )}
+        <button onClick={toggleTheme} className="theme-toggle" title="Toggle theme">
+          {theme === 'light' ? '🌙' : '☀️'}
+        </button>
       </div>
     </nav>
   );

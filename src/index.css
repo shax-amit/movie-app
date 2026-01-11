@@ -6,7 +6,6 @@
   --surface-strong: rgba(255, 255, 255, 0.08);
   --border: rgba(255, 255, 255, 0.08);
   --text: #e5e7eb;
-  --heading: #111827;
   --muted: #9ca3af;
   --shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
 }
@@ -53,12 +52,6 @@ body {
   color: var(--text);
 }
 
-.nav-logo {
-  width: 26px;
-  height: 26px;
-  display: inline-block;
-}
-
 .nav-brand::before {
   content: "";
   width: 10px;
@@ -90,11 +83,6 @@ body {
   background: var(--surface);
 }
 
-.favorites-link {
-  color: #fbbf24 !important;
-  border-color: rgba(251, 191, 36, 0.3) !important;
-}
-
 /* Main Content */
 .main-content {
   padding: 2.5rem 2rem 3rem;
@@ -108,31 +96,11 @@ body {
   margin-bottom: 1.25rem;
   font-size: 2rem;
   letter-spacing: -0.02em;
-  color: var(--heading);
 }
 
-.section {
-  margin: 2.5rem 0;
-}
-
-.section-header {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  margin-bottom: 1rem;
-}
-
-.section-header h2 {
-  margin: 0;
-  font-size: 1.4rem;
-  color: var(--heading);
-}
-
-.section-subtitle {
-  margin: 0;
-  color: var(--muted);
-  font-size: 1.1rem;
-  font-weight: 600;
+/* Light theme page titles */
+[data-theme="light"] .page-container h1 {
+  color: #1f2937 !important;
 }
 
 .page-container p.api-note {
@@ -176,73 +144,9 @@ body {
   gap: 0.4rem;
 }
 
-.api-poster {
-  width: 100%;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  object-fit: cover;
-  max-height: 320px;
-}
-
 .movie-card h3 {
   margin: 0;
   font-size: 1.15rem;
-  color: var(--heading);
-}
-
-.card-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.delete-btn {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: #f87171;
-  border-radius: 999px;
-  width: 28px;
-  height: 28px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  font-weight: 700;
-}
-
-.delete-btn:hover {
-  border-color: #f87171;
-  background: rgba(248, 113, 113, 0.12);
-}
-
-.favorite-btn {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: #fbbf24;
-  border-radius: 999px;
-  width: 32px;
-  height: 32px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  font-size: 1.2rem;
-  font-weight: 700;
-}
-
-.favorite-btn:hover {
-  border-color: #fbbf24;
-  background: rgba(251, 191, 36, 0.12);
-  transform: scale(1.1);
-}
-
-.favorite-btn.active {
-  color: #fbbf24;
-  border-color: #fbbf24;
-  background: rgba(251, 191, 36, 0.15);
 }
 
 .movie-info {
@@ -272,6 +176,10 @@ body {
   line-height: 1.5;
 }
 
+.api-link {
+  margin-top: 0.5rem;
+}
+
 .api-link a {
   color: var(--accent);
   text-decoration: none;
@@ -280,6 +188,14 @@ body {
 
 .api-link a:hover {
   text-decoration: underline;
+}
+
+.api-poster {
+  width: 100%;
+  max-height: 300px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin: 0.5rem 0;
 }
 
 /* Form */
@@ -300,8 +216,14 @@ body {
 .form-group label {
   display: block;
   margin-bottom: 0.35rem;
-  color: var(--heading);
+  color: #f3f4f6;
   font-weight: 600;
+}
+
+/* Ensure labels are dark enough in light theme */
+[data-theme="light"] .form-group label {
+  color: #111827 !important;
+  font-weight: 700;
 }
 
 .form-group input,
@@ -311,16 +233,26 @@ body {
   padding: 0.9rem 1rem;
   border-radius: 12px;
   border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--heading);
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
   outline: none;
   font-size: 1rem;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.form-group input::placeholder,
-.form-group textarea::placeholder {
-  color: var(--muted);
+/* Light theme form inputs - dark text on light background */
+[data-theme="light"] .form-group input,
+[data-theme="light"] .form-group select,
+[data-theme="light"] .form-group textarea {
+  background: #ffffff !important;
+  color: #111827 !important;
+  border-color: rgba(0, 0, 0, 0.2) !important;
+}
+
+[data-theme="light"] .form-group input::placeholder,
+[data-theme="light"] .form-group textarea::placeholder {
+  color: #6b7280 !important;
+  opacity: 0.8;
 }
 
 .form-group input:focus,
@@ -396,61 +328,227 @@ body {
   color: var(--muted);
 }
 
-.empty-state {
-  text-align: center;
-  color: #e53935;
-  font-weight: 600;
-  margin: 3rem 0;
-  grid-column: 1 / -1;
-  justify-self: center;
+.no-results {
+  color: #f97316;
+}
+
+/* Theme Toggle */
+.theme-toggle {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.55rem 1rem;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: all 0.2s ease;
+}
+
+.theme-toggle:hover {
+  background: var(--surface);
+  border-color: var(--surface-strong);
+  transform: scale(1.05);
+}
+
+/* Page Header */
+.page-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
+  margin-bottom: 1.5rem;
 }
 
-/* Not Found Page */
-.not-found {
-  text-align: center;
-  padding: 4rem 2rem;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.not-found h1 {
-  font-size: 6rem;
+.page-header h1 {
   margin: 0;
-  background: linear-gradient(120deg, var(--primary), var(--accent));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-weight: 800;
 }
 
-.not-found h2 {
-  font-size: 2rem;
-  margin: 0.5rem 0 1rem;
-  color: var(--heading);
-}
-
-.not-found p {
-  color: var(--muted);
-  font-size: 1.1rem;
-  margin-bottom: 2rem;
-}
-
-.back-home-btn {
-  display: inline-block;
-  padding: 0.95rem 2rem;
+.refetch-btn,
+.retry-btn {
   background: linear-gradient(120deg, var(--primary), #8b5cf6);
   color: white;
-  text-decoration: none;
-  border-radius: 14px;
-  font-weight: 700;
-  box-shadow: 0 12px 30px rgba(124, 58, 237, 0.35);
+  border: none;
+  border-radius: 12px;
+  padding: 0.6rem 1.2rem;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  box-shadow: 0 8px 20px rgba(124, 58, 237, 0.3);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.back-home-btn:hover {
+.refetch-btn:hover,
+.retry-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 16px 38px rgba(124, 58, 237, 0.45);
+  box-shadow: 0 12px 28px rgba(124, 58, 237, 0.4);
+}
+
+/* Form Header */
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.form-header h1 {
+  margin: 0;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.login-btn,
+.logout-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.login-btn:hover,
+.logout-btn:hover {
+  background: var(--surface);
+  border-color: var(--surface-strong);
+}
+
+/* Sections */
+.section {
+  margin-bottom: 3rem;
+}
+
+.section-header {
+  margin-bottom: 1.5rem;
+}
+
+.section-header h2 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.5rem;
+}
+
+.section-subtitle {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* Dark theme support */
+[data-theme="dark"] {
+  --text: #e5e7eb;
+  --muted: #9ca3af;
+  background: #0c0c16;
+}
+
+[data-theme="light"] {
+  --text: #1f2937;
+  --muted: #4b5563;
+  --border: rgba(0, 0, 0, 0.1);
+  --surface: rgba(0, 0, 0, 0.02);
+  --surface-strong: rgba(0, 0, 0, 0.04);
+  background: #f9fafb;
+}
+
+[data-theme="light"] .movie-card {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.6));
+}
+
+[data-theme="light"] .navbar {
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.95), rgba(249, 250, 251, 0.9));
+}
+
+/* Light theme form improvements - already handled above */
+
+[data-theme="light"] .form-header h1 {
+  color: #1f2937 !important;
+}
+
+[data-theme="light"] .movie-form {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.9)) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="light"] .user-info {
+  color: #4b5563 !important;
+}
+
+[data-theme="light"] .user-info strong {
+  color: #1f2937 !important;
+}
+
+/* Favorite Button */
+.favorite-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  transition: transform 0.2s ease;
+}
+
+.favorite-btn:hover {
+  transform: scale(1.2);
+}
+
+.favorite-btn.active {
+  filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.6));
+}
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.card-top h3 {
+  flex: 1;
+  margin: 0;
+}
+
+.card-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.delete-btn {
+  background: transparent;
+  border: none;
+  color: #f87171;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: background 0.2s ease, transform 0.2s ease;
+  line-height: 1;
+  font-weight: bold;
+}
+
+.delete-btn:hover {
+  background: rgba(248, 113, 113, 0.1);
+  transform: scale(1.1);
+}
+
+[data-theme="light"] .delete-btn {
+  color: #dc2626;
+}
+
+[data-theme="light"] .delete-btn:hover {
+  background: rgba(220, 38, 38, 0.1);
 }

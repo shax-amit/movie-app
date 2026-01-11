@@ -76,4 +76,3 @@ export function FavoritesProvider({ children }) {
     </FavoritesContext.Provider>
   );
 }
-

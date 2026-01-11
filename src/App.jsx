@@ -1,6 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { FavoritesProvider } from './context/FavoritesContext';
+import { useDispatch } from 'react-redux';
+import { useEffect } from 'react';
+import { loadFavorites } from './store/favoritesSlice';
+import { useLocalStorage } from './hooks/useLocalStorage';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import FormPage from './pages/FormPage';
@@ -48,62 +51,59 @@ const INITIAL_MOVIES = [
 ];
 
 function App() {
-  const [movies, setMovies] = useState(() => {
+  const dispatch = useDispatch();
+  
+  // Use useLocalStorage hook for user movies
+  const [storedMovies, setStoredMovies] = useLocalStorage(STORAGE_KEY, []);
+  
+  // Combine seed movies with user movies
+  const movies = useMemo(() => {
+    const userMovies = storedMovies.map((m) => ({ ...m, source: 'user' }));
+    return [...INITIAL_MOVIES, ...userMovies];
+  }, [storedMovies]);
+
+  // Load favorites from localStorage on mount
+  useEffect(() => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) {
-          const withSource = parsed.map((m) => ({ ...m, source: 'user' }));
-          return [...INITIAL_MOVIES, ...withSource];
+      const storedFavorites = localStorage.getItem('movie-favorites');
+      if (storedFavorites) {
+        const parsed = JSON.parse(storedFavorites);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          dispatch(loadFavorites(parsed));
         }
       }
     } catch (err) {
-      console.error('Failed to load movies from storage', err);
+      console.error('Failed to load favorites from storage', err);
     }
-    return INITIAL_MOVIES;
-  });
-
-  useEffect(() => {
-    try {
-      const userMovies = movies.filter((m) => m.source === 'user');
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(userMovies));
-    } catch (err) {
-      console.error('Failed to save movies to storage', err);
-    }
-  }, [movies]);
+  }, [dispatch]);
 
   const addMovie = (movie) => {
-    setMovies((prev) => [
-      ...prev,
-      {
-        ...movie,
-        id: crypto.randomUUID ? crypto.randomUUID() : Date.now(),
-        source: 'user'
-      }
-    ]);
+    const newMovie = {
+      ...movie,
+      id: crypto.randomUUID ? crypto.randomUUID() : Date.now(),
+      source: 'user'
+    };
+    setStoredMovies((prev) => [...prev, newMovie]);
   };
 
   const deleteMovie = (id) => {
-    setMovies((prev) => prev.filter((m) => !(m.id === id && m.source === 'user')));
+    setStoredMovies((prev) => prev.filter((m) => m.id !== id));
   };
 
   return (
-    <FavoritesProvider>
-      <Router>
-        <div className="app">
-          <Navbar />
-          <main className="main-content">
-            <Routes>
-              <Route path="/" element={<Home movies={movies} deleteMovie={deleteMovie} />} />
-              <Route path="/form" element={<FormPage addMovie={addMovie} />} />
-              <Route path="/api" element={<ApiPage />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </main>
-        </div>
-      </Router>
-    </FavoritesProvider>
+    <Router>
+      <div className="app">
+        <Navbar />
+        <main className="main-content">
+          <Routes>
+            <Route path="/" element={<Home movies={movies} deleteMovie={deleteMovie} />} />
+            <Route path="/form" element={<FormPage addMovie={addMovie} />} />
+            <Route path="/api" element={<ApiPage />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </main>
+      </div>
+    </Router>
   );
 }
 
