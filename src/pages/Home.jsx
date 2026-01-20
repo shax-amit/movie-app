@@ -2,11 +2,13 @@ import { useMemo, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectFavorites, removeFavorite, toggleFavorite } from '../store/favoritesSlice';
 import { useApi } from '../hooks/useApi';
+import { useDebounce } from '../hooks/useDebounce';
 import MovieCard from '../components/MovieCard';
 import MovieSkeleton from '../components/MovieSkeleton';
 
 export default function Home({ movies, deleteMovie }) {
     const [filter, setFilter] = useState('');
+    const debouncedFilter = useDebounce(filter, 500);
     const favorites = useSelector(selectFavorites);
     const dispatch = useDispatch();
 
@@ -18,10 +20,12 @@ export default function Home({ movies, deleteMovie }) {
 
 
     // Strictly follow user's request for case-insensitive comparison
-    const searchQuery = (filter || '').toLowerCase();
+    const searchQuery = (debouncedFilter || '').toLowerCase();
 
     // Log to help debugging in the browser console
-    console.log('Searching for:', searchQuery);
+    if (searchQuery) {
+        console.log('Debounced search for:', searchQuery);
+    }
 
     // Filter data directly in render for maximum reliability
     const filteredFavorites = favorites.filter(movie => {
