@@ -23,7 +23,7 @@ export default function Navbar() {
     <nav className="navbar">
       <div className="nav-brand">
         <img src="/movie.svg" alt="Movie logo" className="nav-logo" />
-        Movie App
+        <span>Movie App</span>
       </div>
       <div className="nav-links">
         <Link to="/">Home</Link>

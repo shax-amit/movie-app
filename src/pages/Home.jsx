@@ -14,20 +14,38 @@ export default function Home({ movies, deleteMovie }) {
         'https://ghibliapi.vercel.app/films?limit=3'
     );
 
-    const userMovies = useMemo(
-        () => movies.filter((movie) => movie.source === 'user'),
-        [movies]
-    );
 
-    const seedMovies = useMemo(
-        () => movies.filter((movie) => movie.source === 'seed'),
-        [movies]
-    );
 
-    const filteredUserMovies = userMovies.filter(movie =>
-        movie.title.toLowerCase().includes(filter.toLowerCase()) ||
-        movie.genre.toLowerCase().includes(filter.toLowerCase())
-    );
+    // Strictly follow user's request for case-insensitive comparison
+    const searchQuery = (filter || '').toLowerCase();
+
+    // Log to help debugging in the browser console
+    console.log('Searching for:', searchQuery);
+
+    // Filter data directly in render for maximum reliability
+    const filteredFavorites = favorites.filter(movie => {
+        const title = (movie.title || '').toLowerCase();
+        const genre = (movie.genre || movie.release_date || '').toLowerCase();
+        return title.includes(searchQuery) || genre.includes(searchQuery);
+    });
+
+    const filteredUserMovies = (movies || []).filter(m => m.source === 'user').filter(movie => {
+        const title = (movie.title || '').toLowerCase();
+        const genre = (movie.genre || '').toLowerCase();
+        return title.includes(searchQuery) || genre.includes(searchQuery);
+    });
+
+    const filteredSeedMovies = (movies || []).filter(m => m.source === 'seed').filter(movie => {
+        const title = (movie.title || '').toLowerCase();
+        const genre = (movie.genre || '').toLowerCase();
+        return title.includes(searchQuery) || genre.includes(searchQuery);
+    });
+
+    const filteredTrendingData = (trendingData || []).filter(movie => {
+        const title = (movie.title || '').toLowerCase();
+        const date = (movie.release_date || '').toLowerCase();
+        return title.includes(searchQuery) || date.includes(searchQuery);
+    });
 
     const handleToggleFavorite = (movie) => {
         dispatch(toggleFavorite(movie));
@@ -37,25 +55,56 @@ export default function Home({ movies, deleteMovie }) {
         return favorites.some((fav) => fav.id === movieId);
     };
 
+    const hasAnyResults = filteredFavorites.length > 0 ||
+        filteredUserMovies.length > 0 ||
+        filteredSeedMovies.length > 0 ||
+        filteredTrendingData.length > 0;
+
     return (
         <div className="page-container">
-            <h1>My List</h1>
+            {/* Hero Section with Search */}
+            <section className="hero-section">
+                <div className="hero-content">
+                    <h1 className="hero-title">Discover Your Next Favorite</h1>
+                    <p className="hero-subtitle">Curate your personal collection of cinema masterpieces.</p>
 
-            {favorites.length > 0 && (
+                    <div className="search-wrapper">
+                        <div className="search-container">
+                            <span className="search-icon">🔍</span>
+                            <input
+                                type="text"
+                                placeholder="Search by title or genre..."
+                                value={filter}
+                                onChange={(e) => setFilter(e.target.value)}
+                                className="hero-search-input"
+                                autoFocus
+                            />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {filter && !hasAnyResults && (
+                <div className="empty-state" style={{ marginTop: '2rem' }}>
+                    <h3>No results found for "{filter}"</h3>
+                    <p>Try searching for a different title or genre.</p>
+                </div>
+            )}
+
+            {filteredFavorites.length > 0 && (
                 <section className="section">
                     <div className="section-header">
                         <h2>⭐ My Favorites</h2>
-                        <p className="section-subtitle">Your favorite movies</p>
                     </div>
 
                     <div className="movies-grid">
-                        {favorites.map(movie => (
+                        {filteredFavorites.map(movie => (
                             <MovieCard
                                 key={movie.id}
                                 id={movie.id}
                                 title={movie.title}
                                 rating={movie.rating}
-                                genre={movie.genre}
+                                genre={movie.genre || movie.release_date || 'Favorite'}
                                 description={movie.description}
                                 onDelete={() => dispatch(removeFavorite(movie.id))}
                                 onFavoriteToggle={() => handleToggleFavorite(movie)}
@@ -66,17 +115,16 @@ export default function Home({ movies, deleteMovie }) {
                 </section>
             )}
 
-            {trendingData && trendingData.length > 0 && (
+            {filteredTrendingData.length > 0 && (
                 <section className="section">
                     <div className="section-header">
                         <h2>🔥 Trending Now</h2>
-                        <p className="section-subtitle">Popular recommendations</p>
                     </div>
                     {trendingLoading ? (
                         <div className="loading">Loading recommendations...</div>
                     ) : (
                         <div className="movies-grid">
-                            {trendingData.map(movie => {
+                            {filteredTrendingData.map(movie => {
                                 const movieData = {
                                     id: movie.id,
                                     title: movie.title,
@@ -103,66 +151,52 @@ export default function Home({ movies, deleteMovie }) {
                 </section>
             )}
 
-            <section className="section">
-                <div className="section-header">
-                    <h2>My List</h2>
-                    <p className="section-subtitle">Movies you add</p>
-                </div>
+            {filteredUserMovies.length > 0 && (
+                <section className="section" id="my-list">
+                    <div className="section-header">
+                        <h2>My Collection</h2>
+                    </div>
 
-                <div className="filter-container">
-                    <input
-                        type="text"
-                        placeholder="Search by title or genre..."
-                        value={filter}
-                        onChange={(e) => setFilter(e.target.value)}
-                        className="search-input"
-                    />
-                </div>
+                    <div className="movies-grid">
+                        {filteredUserMovies.map(movie => (
+                            <MovieCard
+                                key={movie.id}
+                                id={movie.id}
+                                title={movie.title}
+                                rating={movie.rating}
+                                genre={movie.genre}
+                                description={movie.description}
+                                onDelete={() => deleteMovie?.(movie.id)}
+                                onFavoriteToggle={() => handleToggleFavorite(movie)}
+                                isFavorite={isFavoriteMovie(movie.id)}
+                            />
+                        ))}
+                    </div>
+                </section>
+            )}
 
-                <div className="movies-grid">
-                    {filteredUserMovies.map(movie => (
-                        <MovieCard
-                            key={movie.id}
-                            id={movie.id}
-                            title={movie.title}
-                            rating={movie.rating}
-                            genre={movie.genre}
-                            description={movie.description}
-                            onDelete={() => deleteMovie?.(movie.id)}
-                            onFavoriteToggle={() => handleToggleFavorite(movie)}
-                            isFavorite={isFavoriteMovie(movie.id)}
-                        />
-                    ))}
-                    {filteredUserMovies.length === 0 && (
-                        <div className="empty-state">
-                            {userMovies.length === 0
-                                ? 'No movies added yet. Go to Add Movie to add your first one!'
-                                : `No movies found matching "${filter}"`}
-                        </div>
-                    )}
-                </div>
-            </section>
+            {filteredSeedMovies.length > 0 && (
+                <section className="section">
+                    <div className="section-header">
+                        <h2>Weekly Picks</h2>
+                    </div>
 
-            <section className="section">
-                <div className="section-header">
-                    <h2 className="section-subtitle">Weekly Picks</h2>
-                </div>
-
-                <div className="movies-grid">
-                    {seedMovies.map(movie => (
-                        <MovieCard
-                            key={movie.id}
-                            id={movie.id}
-                            title={movie.title}
-                            rating={movie.rating}
-                            genre={movie.genre}
-                            description={movie.description}
-                            onFavoriteToggle={() => handleToggleFavorite(movie)}
-                            isFavorite={isFavoriteMovie(movie.id)}
-                        />
-                    ))}
-                </div>
-            </section>
+                    <div className="movies-grid">
+                        {filteredSeedMovies.map(movie => (
+                            <MovieCard
+                                key={movie.id}
+                                id={movie.id}
+                                title={movie.title}
+                                rating={movie.rating}
+                                genre={movie.genre}
+                                description={movie.description}
+                                onFavoriteToggle={() => handleToggleFavorite(movie)}
+                                isFavorite={isFavoriteMovie(movie.id)}
+                            />
+                        ))}
+                    </div>
+                </section>
+            )}
         </div>
     );
 }
