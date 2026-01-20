@@ -5,6 +5,7 @@ import { useApi } from '../hooks/useApi';
 import { useDebounce } from '../hooks/useDebounce';
 import MovieCard from '../components/MovieCard';
 import MovieSkeleton from '../components/MovieSkeleton';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Home({ movies, deleteMovie }) {
     const [filter, setFilter] = useState('');
@@ -65,11 +66,36 @@ export default function Home({ movies, deleteMovie }) {
         filteredSeedMovies.length > 0 ||
         filteredTrendingData.length > 0;
 
+    // Animation Variants
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.1
+            }
+        }
+    };
+
+    const itemVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: { duration: 0.5, ease: "easeOut" }
+        }
+    };
+
     return (
         <div className="page-container">
             {/* Hero Section with Search */}
             <section className="hero-section">
-                <div className="hero-content">
+                <motion.div
+                    className="hero-content"
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8 }}
+                >
                     <h1 className="hero-title">Discover Your Next Favorite</h1>
                     <p className="hero-subtitle">Curate your personal collection of cinema masterpieces.</p>
 
@@ -86,14 +112,19 @@ export default function Home({ movies, deleteMovie }) {
                             />
                         </div>
                     </div>
-                </div>
+                </motion.div>
             </section>
 
             {filter && !hasAnyResults && (
-                <div className="empty-state" style={{ marginTop: '2rem' }}>
+                <motion.div
+                    className="empty-state"
+                    style={{ marginTop: '2rem' }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                >
                     <h3>No results found for "{filter}"</h3>
                     <p>Try searching for a different title or genre.</p>
-                </div>
+                </motion.div>
             )}
 
             {filteredFavorites.length > 0 && (
@@ -102,21 +133,29 @@ export default function Home({ movies, deleteMovie }) {
                         <h2>⭐ My Favorites</h2>
                     </div>
 
-                    <div className="movies-grid">
-                        {filteredFavorites.map(movie => (
-                            <MovieCard
-                                key={movie.id}
-                                id={movie.id}
-                                title={movie.title}
-                                rating={movie.rating}
-                                genre={movie.genre || movie.release_date || 'Favorite'}
-                                description={movie.description}
-                                onDelete={() => dispatch(removeFavorite(movie.id))}
-                                onFavoriteToggle={() => handleToggleFavorite(movie)}
-                                isFavorite={true}
-                            />
-                        ))}
-                    </div>
+                    <motion.div
+                        className="movies-grid"
+                        variants={containerVariants}
+                        initial="hidden"
+                        animate="visible"
+                    >
+                        <AnimatePresence>
+                            {filteredFavorites.map(movie => (
+                                <MovieCard
+                                    key={`fav-${movie.id}`}
+                                    id={movie.id}
+                                    title={movie.title}
+                                    rating={movie.rating}
+                                    genre={movie.genre || movie.release_date || 'Favorite'}
+                                    description={movie.description}
+                                    onDelete={() => dispatch(removeFavorite(movie.id))}
+                                    onFavoriteToggle={() => handleToggleFavorite(movie)}
+                                    isFavorite={true}
+                                    variants={itemVariants}
+                                />
+                            ))}
+                        </AnimatePresence>
+                    </motion.div>
                 </section>
             )}
 
@@ -132,30 +171,38 @@ export default function Home({ movies, deleteMovie }) {
                             <MovieSkeleton />
                         </div>
                     ) : (
-                        <div className="movies-grid">
-                            {filteredTrendingData.map(movie => {
-                                const movieData = {
-                                    id: movie.id,
-                                    title: movie.title,
-                                    rating: Math.round(movie.rt_score / 10),
-                                    genre: movie.release_date,
-                                    description: movie.description?.substring(0, 100) + '...',
-                                    source: 'api'
-                                };
-                                return (
-                                    <MovieCard
-                                        key={movie.id}
-                                        id={movie.id}
-                                        title={movie.title}
-                                        rating={Math.round(movie.rt_score / 10)}
-                                        genre={movie.release_date}
-                                        description={movie.description?.substring(0, 100) + '...'}
-                                        onFavoriteToggle={() => handleToggleFavorite(movieData)}
-                                        isFavorite={isFavoriteMovie(movie.id)}
-                                    />
-                                );
-                            })}
-                        </div>
+                        <motion.div
+                            className="movies-grid"
+                            variants={containerVariants}
+                            initial="hidden"
+                            animate="visible"
+                        >
+                            <AnimatePresence>
+                                {filteredTrendingData.map(movie => {
+                                    const movieData = {
+                                        id: movie.id,
+                                        title: movie.title,
+                                        rating: Math.round(movie.rt_score / 10),
+                                        genre: movie.release_date,
+                                        description: movie.description?.substring(0, 100) + '...',
+                                        source: 'api'
+                                    };
+                                    return (
+                                        <MovieCard
+                                            key={`trend-${movie.id}`}
+                                            id={movie.id}
+                                            title={movie.title}
+                                            rating={Math.round(movie.rt_score / 10)}
+                                            genre={movie.release_date}
+                                            description={movie.description?.substring(0, 100) + '...'}
+                                            onFavoriteToggle={() => handleToggleFavorite(movieData)}
+                                            isFavorite={isFavoriteMovie(movie.id)}
+                                            variants={itemVariants}
+                                        />
+                                    );
+                                })}
+                            </AnimatePresence>
+                        </motion.div>
                     )}
                 </section>
             )}
@@ -166,21 +213,29 @@ export default function Home({ movies, deleteMovie }) {
                         <h2>My Collection</h2>
                     </div>
 
-                    <div className="movies-grid">
-                        {filteredUserMovies.map(movie => (
-                            <MovieCard
-                                key={movie.id}
-                                id={movie.id}
-                                title={movie.title}
-                                rating={movie.rating}
-                                genre={movie.genre}
-                                description={movie.description}
-                                onDelete={() => deleteMovie?.(movie.id)}
-                                onFavoriteToggle={() => handleToggleFavorite(movie)}
-                                isFavorite={isFavoriteMovie(movie.id)}
-                            />
-                        ))}
-                    </div>
+                    <motion.div
+                        className="movies-grid"
+                        variants={containerVariants}
+                        initial="hidden"
+                        animate="visible"
+                    >
+                        <AnimatePresence>
+                            {filteredUserMovies.map(movie => (
+                                <MovieCard
+                                    key={`user-${movie.id}`}
+                                    id={movie.id}
+                                    title={movie.title}
+                                    rating={movie.rating}
+                                    genre={movie.genre}
+                                    description={movie.description}
+                                    onDelete={() => deleteMovie?.(movie.id)}
+                                    onFavoriteToggle={() => handleToggleFavorite(movie)}
+                                    isFavorite={isFavoriteMovie(movie.id)}
+                                    variants={itemVariants}
+                                />
+                            ))}
+                        </AnimatePresence>
+                    </motion.div>
                 </section>
             )}
 
@@ -190,20 +245,28 @@ export default function Home({ movies, deleteMovie }) {
                         <h2>Weekly Picks</h2>
                     </div>
 
-                    <div className="movies-grid">
-                        {filteredSeedMovies.map(movie => (
-                            <MovieCard
-                                key={movie.id}
-                                id={movie.id}
-                                title={movie.title}
-                                rating={movie.rating}
-                                genre={movie.genre}
-                                description={movie.description}
-                                onFavoriteToggle={() => handleToggleFavorite(movie)}
-                                isFavorite={isFavoriteMovie(movie.id)}
-                            />
-                        ))}
-                    </div>
+                    <motion.div
+                        className="movies-grid"
+                        variants={containerVariants}
+                        initial="hidden"
+                        animate="visible"
+                    >
+                        <AnimatePresence mode="popLayout">
+                            {filteredSeedMovies.map(movie => (
+                                <MovieCard
+                                    key={`seed-${movie.id}`}
+                                    id={movie.id}
+                                    title={movie.title}
+                                    rating={movie.rating}
+                                    genre={movie.genre}
+                                    description={movie.description}
+                                    onFavoriteToggle={() => handleToggleFavorite(movie)}
+                                    isFavorite={isFavoriteMovie(movie.id)}
+                                    variants={itemVariants}
+                                />
+                            ))}
+                        </AnimatePresence>
+                    </motion.div>
                 </section>
             )}
         </div>

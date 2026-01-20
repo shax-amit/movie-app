@@ -1,17 +1,28 @@
-export default function MovieCard({ 
+import { motion } from 'framer-motion';
+
+export default function MovieCard({
     id,
-    title, 
-    rating, 
-    genre, 
-    description, 
+    title,
+    rating,
+    genre,
+    description,
     onDelete,
     onFavoriteToggle,
     isFavorite,
     image,
-    imdbLink
+    imdbLink,
+    variants
 }) {
     return (
-        <div className="movie-card">
+        <motion.div
+            className="movie-card"
+            variants={variants}
+            whileHover={{
+                scale: 1.05,
+                transition: { duration: 0.2 }
+            }}
+            layout
+        >
             <div className="card-top">
                 <h3>{title}</h3>
                 <div className="card-actions">
@@ -56,6 +67,7 @@ export default function MovieCard({
                     </a>
                 </p>
             )}
-        </div>
+        </motion.div>
     );
 }
+
