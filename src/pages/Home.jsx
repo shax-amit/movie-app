@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { selectFavorites, removeFavorite, toggleFavorite } from '../store/favoritesSlice';
 import { useApi } from '../hooks/useApi';
 import MovieCard from '../components/MovieCard';
+import MovieSkeleton from '../components/MovieSkeleton';
 
 export default function Home({ movies, deleteMovie }) {
     const [filter, setFilter] = useState('');
@@ -115,13 +116,17 @@ export default function Home({ movies, deleteMovie }) {
                 </section>
             )}
 
-            {filteredTrendingData.length > 0 && (
+            {(filteredTrendingData.length > 0 || trendingLoading) && (
                 <section className="section">
                     <div className="section-header">
                         <h2>🔥 Trending Now</h2>
                     </div>
                     {trendingLoading ? (
-                        <div className="loading">Loading recommendations...</div>
+                        <div className="movies-grid">
+                            <MovieSkeleton />
+                            <MovieSkeleton />
+                            <MovieSkeleton />
+                        </div>
                     ) : (
                         <div className="movies-grid">
                             {filteredTrendingData.map(movie => {
