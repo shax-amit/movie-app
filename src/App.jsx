@@ -20,6 +20,7 @@ const INITIAL_MOVIES = [
     rating: 9,
     genre: 'Sci-Fi',
     source: 'seed',
+    trailerId: 'YoHD9XEInc0',
     description:
       'A thief who steals corporate secrets through the use of dream-sharing technology.'
   },
@@ -29,6 +30,7 @@ const INITIAL_MOVIES = [
     rating: 10,
     genre: 'Action',
     source: 'seed',
+    trailerId: 'EXeTwQWrcwY',
     description: 'When the menace known as the Joker wreaks havoc and chaos on the people of Gotham.'
   },
   {
@@ -37,6 +39,7 @@ const INITIAL_MOVIES = [
     rating: 8.5,
     genre: 'Sci-Fi',
     source: 'seed',
+    trailerId: 'zSWdZVtXT7E',
     description:
       "A team of explorers travel through a wormhole in space in an attempt to ensure humanity's survival."
   },
@@ -46,6 +49,7 @@ const INITIAL_MOVIES = [
     rating: 9.5,
     genre: 'Drama',
     source: 'seed',
+    trailerId: '5xH0HfJHsaY',
     description:
       'Greed and class discrimination threaten the newly formed symbiotic relationship between the wealthy Park family and the destitute Kim clan.'
   }

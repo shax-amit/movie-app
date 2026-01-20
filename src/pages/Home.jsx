@@ -191,6 +191,7 @@ export default function Home({ movies, deleteMovie }) {
                                     onDelete={() => deleteMovie?.(movie.id)}
                                     onFavoriteToggle={() => handleToggleFavorite(movie)}
                                     isFavorite={isFavoriteMovie(movie.id)}
+                                    trailerId={movie.trailerId}
                                     variants={itemVariants}
                                 />
                             ))}
@@ -222,6 +223,7 @@ export default function Home({ movies, deleteMovie }) {
                                     description={movie.description}
                                     onFavoriteToggle={() => handleToggleFavorite(movie)}
                                     isFavorite={isFavoriteMovie(movie.id)}
+                                    trailerId={movie.trailerId}
                                     variants={itemVariants}
                                 />
                             ))}

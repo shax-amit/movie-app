@@ -87,6 +87,7 @@ export default function MyListPage() {
                                 description={movie.description}
                                 onFavoriteToggle={() => dispatch(toggleFavorite(movie))}
                                 isFavorite={true}
+                                trailerId={movie.trailerId}
                                 variants={itemVariants}
                             />
                         ))}
