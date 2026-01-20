@@ -28,13 +28,6 @@ export default function Home({ movies, deleteMovie }) {
         console.log('Debounced search for:', searchQuery);
     }
 
-    // Filter data directly in render for maximum reliability
-    const filteredFavorites = favorites.filter(movie => {
-        const title = (movie.title || '').toLowerCase();
-        const genre = (movie.genre || movie.release_date || '').toLowerCase();
-        return title.includes(searchQuery) || genre.includes(searchQuery);
-    });
-
     const filteredUserMovies = (movies || []).filter(m => m.source === 'user').filter(movie => {
         const title = (movie.title || '').toLowerCase();
         const genre = (movie.genre || '').toLowerCase();
@@ -61,8 +54,7 @@ export default function Home({ movies, deleteMovie }) {
         return favorites.some((fav) => fav.id === movieId);
     };
 
-    const hasAnyResults = filteredFavorites.length > 0 ||
-        filteredUserMovies.length > 0 ||
+    const hasAnyResults = filteredUserMovies.length > 0 ||
         filteredSeedMovies.length > 0 ||
         filteredTrendingData.length > 0;
 
@@ -125,38 +117,6 @@ export default function Home({ movies, deleteMovie }) {
                     <h3>No results found for "{filter}"</h3>
                     <p>Try searching for a different title or genre.</p>
                 </motion.div>
-            )}
-
-            {filteredFavorites.length > 0 && (
-                <section className="section">
-                    <div className="section-header">
-                        <h2>⭐ My Favorites</h2>
-                    </div>
-
-                    <motion.div
-                        className="movies-grid"
-                        variants={containerVariants}
-                        initial="hidden"
-                        animate="visible"
-                    >
-                        <AnimatePresence>
-                            {filteredFavorites.map(movie => (
-                                <MovieCard
-                                    key={`fav-${movie.id}`}
-                                    id={movie.id}
-                                    title={movie.title}
-                                    rating={movie.rating}
-                                    genre={movie.genre || movie.release_date || 'Favorite'}
-                                    description={movie.description}
-                                    onDelete={() => dispatch(removeFavorite(movie.id))}
-                                    onFavoriteToggle={() => handleToggleFavorite(movie)}
-                                    isFavorite={true}
-                                    variants={itemVariants}
-                                />
-                            ))}
-                        </AnimatePresence>
-                    </motion.div>
-                </section>
             )}
 
             {(filteredTrendingData.length > 0 || trendingLoading) && (

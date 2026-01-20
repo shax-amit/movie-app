@@ -31,9 +31,9 @@ export default function MovieCard({
                             type="button"
                             className={`favorite-btn ${isFavorite ? 'active' : ''}`}
                             onClick={() => onFavoriteToggle()}
-                            title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+                            title={isFavorite ? 'Remove from My List' : 'Add to My List'}
                         >
-                            {isFavorite ? '⭐' : '☆'}
+                            {isFavorite ? '❤️' : '🤍'}
                         </button>
                     )}
                     {onDelete && (

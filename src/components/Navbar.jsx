@@ -30,8 +30,8 @@ export default function Navbar() {
         <Link to="/form">Add Movie</Link>
         <Link to="/api">External API</Link>
         {favoritesCount > 0 && (
-          <Link to="/" className="favorites-link">
-            ⭐ Favorites ({favoritesCount})
+          <Link to="/my-list" className="favorites-link">
+            ❤️ My List ({favoritesCount})
           </Link>
         )}
         <button onClick={toggleTheme} className="theme-toggle" title="Toggle theme">

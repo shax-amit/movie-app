@@ -8,6 +8,7 @@ import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import FormPage from './pages/FormPage';
 import ApiPage from './pages/ApiPage';
+import MyListPage from './pages/MyListPage';
 import NotFound from './pages/NotFound';
 
 const STORAGE_KEY = 'user-movies';
@@ -52,10 +53,10 @@ const INITIAL_MOVIES = [
 
 function App() {
   const dispatch = useDispatch();
-  
+
   // Use useLocalStorage hook for user movies
   const [storedMovies, setStoredMovies] = useLocalStorage(STORAGE_KEY, []);
-  
+
   // Combine seed movies with user movies
   const movies = useMemo(() => {
     const userMovies = storedMovies.map((m) => ({ ...m, source: 'user' }));
@@ -99,6 +100,7 @@ function App() {
             <Route path="/" element={<Home movies={movies} deleteMovie={deleteMovie} />} />
             <Route path="/form" element={<FormPage addMovie={addMovie} />} />
             <Route path="/api" element={<ApiPage />} />
+            <Route path="/my-list" element={<MyListPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
