@@ -1,9 +1,13 @@
 import { useState } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
+import { useMovies } from '../hooks/useMovies';
+import { useNavigate } from 'react-router-dom';
 
-export default function FormPage({ addMovie }) {
+export default function FormPage() {
     // Use useLocalStorage for fake logged-in user
     const [user, setUser] = useLocalStorage('fake-user', null);
+    const { addMovie } = useMovies();
+    const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
         title: '',
@@ -13,6 +17,8 @@ export default function FormPage({ addMovie }) {
     });
 
     const [errors, setErrors] = useState({});
+    const [submitError, setSubmitError] = useState(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const validate = () => {
         const newErrors = {};
@@ -30,28 +36,36 @@ export default function FormPage({ addMovie }) {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        setSubmitError(null);
 
         if (validate()) {
-            console.log('Form Submitted Successfully:', formData);
-            if (addMovie) {
-                addMovie({
+            setIsSubmitting(true);
+            try {
+                await addMovie({
                     title: formData.title,
                     rating: Number(formData.rating),
                     genre: formData.genre,
                     description: formData.review
                 });
+                
+                // Reset form on success
+                setFormData({
+                    title: '',
+                    rating: '',
+                    genre: 'Action',
+                    review: ''
+                });
+                setErrors({});
+                
+                // Navigate to home page to see the new movie
+                navigate('/');
+            } catch (err) {
+                setSubmitError(err.message || 'Failed to add movie. Please try again.');
+            } finally {
+                setIsSubmitting(false);
             }
-            alert('Movie added! Check the console for details.');
-            // Reset form
-            setFormData({
-                title: '',
-                rating: '',
-                genre: 'Action',
-                review: ''
-            });
-            setErrors({});
         }
     };
 
@@ -114,7 +128,25 @@ export default function FormPage({ addMovie }) {
                     />
                 </div>
 
-                <button type="submit" className="submit-btn">Add Movie</button>
+                {submitError && (
+                    <div className="error-message" style={{ 
+                        padding: '1rem', 
+                        backgroundColor: '#fee', 
+                        color: '#c33', 
+                        borderRadius: '4px',
+                        marginBottom: '1rem'
+                    }}>
+                        {submitError}
+                    </div>
+                )}
+
+                <button 
+                    type="submit" 
+                    className="submit-btn"
+                    disabled={isSubmitting}
+                >
+                    {isSubmitting ? 'Adding...' : 'Add Movie'}
+                </button>
             </form>
         </div>
     );

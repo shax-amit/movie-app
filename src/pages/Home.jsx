@@ -3,11 +3,13 @@ import { useSelector, useDispatch } from 'react-redux';
 import { selectFavorites, removeFavorite, toggleFavorite } from '../store/favoritesSlice';
 import { useApi } from '../hooks/useApi';
 import { useDebounce } from '../hooks/useDebounce';
+import { useMovies } from '../hooks/useMovies';
 import MovieCard from '../components/MovieCard';
 import MovieSkeleton from '../components/MovieSkeleton';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function Home({ movies, deleteMovie }) {
+export default function Home() {
+    const { movies, loading: moviesLoading, error: moviesError, deleteMovie } = useMovies();
     const [filter, setFilter] = useState('');
     const debouncedFilter = useDebounce(filter, 500);
     const favorites = useSelector(selectFavorites);
@@ -77,6 +79,55 @@ export default function Home({ movies, deleteMovie }) {
             transition: { duration: 0.5, ease: "easeOut" }
         }
     };
+
+    // Show loading state
+    if (moviesLoading && !movies.length) {
+        return (
+            <div className="page-container">
+                <div className="movies-grid">
+                    <MovieSkeleton />
+                    <MovieSkeleton />
+                    <MovieSkeleton />
+                </div>
+            </div>
+        );
+    }
+
+    // Show error state
+    if (moviesError && !movies.length) {
+        return (
+            <div className="page-container">
+                <div className="error-state" style={{ 
+                    padding: '2rem', 
+                    textAlign: 'center',
+                    backgroundColor: '#fee',
+                    color: '#c33',
+                    borderRadius: '8px',
+                    margin: '2rem 0'
+                }}>
+                    <h2>⚠️ Error Loading Movies</h2>
+                    <p>{moviesError}</p>
+                    <p style={{ marginTop: '1rem', fontSize: '0.9rem', color: '#666' }}>
+                        Make sure the server is running on http://localhost:3001
+                    </p>
+                    <button 
+                        onClick={() => window.location.reload()} 
+                        style={{
+                            marginTop: '1rem',
+                            padding: '0.5rem 1rem',
+                            backgroundColor: '#007bff',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        Retry
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="page-container">
@@ -188,7 +239,15 @@ export default function Home({ movies, deleteMovie }) {
                                     rating={movie.rating}
                                     genre={movie.genre}
                                     description={movie.description}
-                                    onDelete={() => deleteMovie?.(movie.id)}
+                                    onDelete={async () => {
+                                        if (window.confirm(`Are you sure you want to delete "${movie.title}"?`)) {
+                                            try {
+                                                await deleteMovie(movie.id);
+                                            } catch (err) {
+                                                alert(`Failed to delete movie: ${err.message}`);
+                                            }
+                                        }
+                                    }}
                                     onFavoriteToggle={() => handleToggleFavorite(movie)}
                                     isFavorite={isFavoriteMovie(movie.id)}
                                     trailerId={movie.trailerId}

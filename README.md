@@ -87,26 +87,165 @@ The application consists of 4 main pages:
 
 ## How to Run
 
-1.  **Install Dependencies:**
+### Prerequisites
+- Node.js (v18 or higher)
+- npm or yarn
+- MongoDB (local installation or MongoDB Atlas account)
 
-    ```bash
-    npm install
-    ```
+### Backend Server Setup
 
-2.  **Start Development Server:**
+1. **Navigate to server directory:**
+   ```bash
+   cd server
+   ```
 
-    ```bash
-    npm run dev
-    ```
+2. **Install MongoDB:**
+   - **Option 1: Local MongoDB**
+     - Download and install from [MongoDB Community Server](https://www.mongodb.com/try/download/community)
+     - Start MongoDB service (usually runs automatically on Windows)
+   - **Option 2: MongoDB Atlas (Cloud - Free)**
+     - Sign up at [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
+     - Create a free cluster
+     - Get your connection string
 
-3.  **Open in Browser:**
-    Navigate to the URL shown in the terminal (usually `http://localhost:5173`).
+3. **Install server dependencies:**
+   ```bash
+   cd server
+   npm install
+   ```
+
+4. **Configure environment variables:**
+   Create a `.env` file in the `server` directory:
+   ```env
+   PORT=3001
+   NODE_ENV=development
+   MONGODB_URI=mongodb://localhost:27017/movie-app
+   ```
+   For MongoDB Atlas, use your connection string:
+   ```env
+   MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/movie-app
+   ```
+
+5. **Start the server:**
+   ```bash
+   npm start
+   # Or for development with auto-reload:
+   npm run dev
+   ```
+
+   The server will run on `http://localhost:3001` by default.
+
+4. **Database Setup (MongoDB):**
+   - Install MongoDB locally or use MongoDB Atlas (cloud)
+   - Create a `.env` file in the `server` directory:
+     ```env
+     MONGODB_URI=mongodb://localhost:27017/movie-app
+     ```
+   - Or for MongoDB Atlas:
+     ```env
+     MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/movie-app
+     ```
+   - The database will be created automatically on first run
+   - Initial seed data (4 movies) will be added automatically if database is empty
+
+### Frontend Setup
+
+1. **Install Dependencies:**
+   ```bash
+   npm install
+   ```
+
+2. **Set Environment Variables (Optional):**
+   Create a `.env` file in the root directory:
+   ```env
+   VITE_API_URL=http://localhost:3001/api
+   ```
+
+3. **Start Development Server:**
+   ```bash
+   npm run dev
+   ```
+
+4. **Open in Browser:**
+   Navigate to the URL shown in the terminal (usually `http://localhost:5173`).
+
+### Running Both Servers
+
+You need to run both the backend server and frontend dev server simultaneously:
+
+**Terminal 1 (Backend):**
+```bash
+cd server
+npm start
+```
+
+**Terminal 2 (Frontend):**
+```bash
+npm run dev
+```
+
+## API Endpoints
+
+The server provides the following REST API endpoints:
+
+- `GET /api/movies` - Get all movies (supports query params: `?search=term&genre=Action&source=user`)
+- `GET /api/movies/:id` - Get a single movie by ID
+- `POST /api/movies` - Create a new movie
+- `PUT /api/movies/:id` - Update a movie
+- `DELETE /api/movies/:id` - Delete a movie (cannot delete seed movies)
+- `GET /api/health` - Health check endpoint
+
+### Example API Request
+
+```javascript
+// Create a movie
+POST http://localhost:3001/api/movies
+Content-Type: application/json
+
+{
+  "title": "The Matrix",
+  "rating": 9.5,
+  "genre": "Sci-Fi",
+  "description": "A computer hacker learns about the true nature of reality."
+}
+```
+
+## Database Schema
+
+MongoDB stores movies in a `movies` collection with the following schema:
+
+- `id` (TEXT, PRIMARY KEY) - Unique identifier
+- `title` (TEXT, NOT NULL) - Movie title
+- `rating` (REAL, NOT NULL) - Rating between 1-10
+- `genre` (TEXT, NOT NULL) - Movie genre
+- `description` (TEXT) - Movie description
+- `trailerId` (TEXT) - YouTube trailer ID
+- `source` (TEXT) - 'seed' or 'user'
+- `createdAt` (DATETIME) - Creation timestamp
+- `updatedAt` (DATETIME) - Last update timestamp
 
 ## Technologies Used
 
-- React
-- Vite
+### Frontend
+- React 19
+- Vite (build tool)
 - React Router DOM (for routing)
-- React Context API (for global state management)
-- CSS (Custom styling)
-- localStorage (for persisting favorites)
+- Redux Toolkit (for state management)
+- React Context API (for favorites)
+- Framer Motion (for animations)
+- Custom Hooks (useApi, useDebounce, useLocalStorage, useMovies)
+
+### Backend
+- Node.js
+- Express.js (web framework)
+- MongoDB with Mongoose (database)
+- CORS (for cross-origin requests)
+- dotenv (for environment variables)
+
+### Features
+- Server-side validation
+- Error handling
+- Loading states
+- CRUD operations
+- Search and filtering
+- Local storage (for favorites)
