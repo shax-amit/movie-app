@@ -2,7 +2,6 @@ import { useMemo, useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectFavorites, removeFavorite, toggleFavorite, addFavorite, loadFavorites } from '../store/favoritesSlice';
 import { useApi } from '../hooks/useApi';
-import { useDebounce } from '../hooks/useDebounce';
 import { useMovies } from '../hooks/useMovies';
 import MovieCard from '../components/MovieCard';
 import MovieSkeleton from '../components/MovieSkeleton';
@@ -13,8 +12,6 @@ import { getGenreNames } from '../utils/tmdbGenres';
 
 export default function Home() {
     const { movies, loading: moviesLoading, error: moviesError, deleteMovie, addMovie, updateMovie } = useMovies();
-    const [filter, setFilter] = useState('');
-    const debouncedFilter = useDebounce(filter, 500);
     const favorites = useSelector(selectFavorites);
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -23,38 +20,27 @@ export default function Home() {
     const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
     const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w500';
 
-    // Use useApi hook to fetch trending movie recommendations from TMDB
+    // Use useApi hook to fetch trending movie recommendations from TMDB (Daily trends)
     const { data: trendingData, loading: trendingLoading } = useApi(
-        `${TMDB_BASE_URL}/trending/movie/week?api_key=${TMDB_API_KEY}`
+        `${TMDB_BASE_URL}/trending/movie/day?api_key=${TMDB_API_KEY}`
     );
 
-    // Use useApi hook to fetch weekly picks (Top Rated) from TMDB
+    // Use useApi hook to fetch weekly picks (Now Playing) from TMDB
     const { data: weeklyPicksData, loading: weeklyPicksLoading } = useApi(
-        `${TMDB_BASE_URL}/movie/top_rated?api_key=${TMDB_API_KEY}`
+        `${TMDB_BASE_URL}/movie/now_playing?api_key=${TMDB_API_KEY}`
     );
 
-    const searchQuery = (debouncedFilter || '').toLowerCase();
-
-
-    // Trending from TMDB
-    const filteredTrending = (trendingData?.results || []).slice(0, 4).filter(movie => {
-        const title = (movie.title || '').toLowerCase();
-        return title.includes(searchQuery);
-    });
+    // Trending from TMDB (Top 6)
+    const filteredTrending = (trendingData?.results || []).slice(0, 6);
 
     // User Added Movies (Explicitly from form)
-    const filteredAddedMovies = (movies || []).filter(movie => {
-        if (movie.source !== 'user') return false;
-        const title = (movie.title || '').toLowerCase();
-        const genre = (movie.genre || '').toLowerCase();
-        return title.includes(searchQuery) || genre.includes(searchQuery);
-    });
+    const filteredAddedMovies = (movies || []).filter(movie => movie.source === 'user');
 
-    // Weekly Picks from TMDB
-    const filteredWeeklyPicks = (weeklyPicksData?.results || []).slice(0, 4).filter(movie => {
-        const title = (movie.title || '').toLowerCase();
-        return title.includes(searchQuery);
-    });
+    // Weekly Picks from TMDB (Top 6 unique from Trending)
+    const trendingIds = new Set(filteredTrending.map(m => m.id));
+    const filteredWeeklyPicks = (weeklyPicksData?.results || [])
+        .filter(movie => !trendingIds.has(movie.id))
+        .slice(0, 6);
 
     const handleToggleFavorite = async (movie, source) => {
         const favorited = isFavoriteMovie(movie);
@@ -179,7 +165,6 @@ export default function Home() {
         );
     }
 
-    // Show error state
     if (moviesError && !movies.length) {
         return (
             <div className="page-container">
@@ -193,20 +178,10 @@ export default function Home() {
                 }}>
                     <h2>⚠️ Error Loading Movies</h2>
                     <p>{moviesError}</p>
-                    <p style={{ marginTop: '1rem', fontSize: '0.9rem', color: '#666' }}>
-                        Make sure the server is running on http://localhost:3001
-                    </p>
                     <button
                         onClick={() => window.location.reload()}
-                        style={{
-                            marginTop: '1rem',
-                            padding: '0.5rem 1rem',
-                            backgroundColor: '#007bff',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: 'pointer'
-                        }}
+                        className="api-search-btn"
+                        style={{ marginTop: '1rem' }}
                     >
                         Retry
                     </button>
@@ -217,7 +192,7 @@ export default function Home() {
 
     return (
         <div className="page-container">
-            {/* Hero Section with Search */}
+            {/* Hero Section */}
             <section className="hero-section">
                 <motion.div
                     className="hero-content"
@@ -227,34 +202,8 @@ export default function Home() {
                 >
                     <h1 className="hero-title">Discover Your Next Favorite</h1>
                     <p className="hero-subtitle">Curate your personal collection of cinema masterpieces.</p>
-
-                    <div className="search-wrapper">
-                        <div className="search-container">
-                            <span className="search-icon">🔍</span>
-                            <input
-                                type="text"
-                                placeholder="Search by title or genre..."
-                                value={filter}
-                                onChange={(e) => setFilter(e.target.value)}
-                                className="hero-search-input"
-                                autoFocus
-                            />
-                        </div>
-                    </div>
                 </motion.div>
             </section>
-
-            {filter && !hasAnyResults && (
-                <motion.div
-                    className="empty-state"
-                    style={{ marginTop: '2rem' }}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                >
-                    <h3>No results found for "{filter}"</h3>
-                    <p>Try searching for a different title or genre.</p>
-                </motion.div>
-            )}
 
             {filteredAddedMovies.length > 0 && (
                 <section className="section">
@@ -308,10 +257,7 @@ export default function Home() {
                     </div>
                     {trendingLoading ? (
                         <div className="movies-grid">
-                            <MovieSkeleton />
-                            <MovieSkeleton />
-                            <MovieSkeleton />
-                            <MovieSkeleton />
+                            {[...Array(6)].map((_, i) => <MovieSkeleton key={i} />)}
                         </div>
                     ) : (
                         <motion.div
@@ -358,8 +304,7 @@ export default function Home() {
                     </div>
                     {weeklyPicksLoading ? (
                         <div className="movies-grid">
-                            <MovieSkeleton />
-                            <MovieSkeleton />
+                            {[...Array(6)].map((_, i) => <MovieSkeleton key={i} />)}
                         </div>
                     ) : (
                         <motion.div
