@@ -35,7 +35,6 @@ const movieSchema = new mongoose.Schema({
   },
   externalId: {
     type: String,
-    unique: true,
     sparse: true
   },
   trailerId: {
@@ -62,6 +61,11 @@ const movieSchema = new mongoose.Schema({
   year: {
     type: String,
     trim: true
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: false // Optional for now to avoid breaking existing data
   }
 }, {
   timestamps: true,
@@ -89,6 +93,8 @@ const movieSchema = new mongoose.Schema({
 movieSchema.index({ title: 'text', description: 'text' });
 movieSchema.index({ genre: 1 });
 movieSchema.index({ source: 1 });
+movieSchema.index({ userId: 1 });
+movieSchema.index({ externalId: 1, userId: 1 }, { unique: true, sparse: true });
 
 const Movie = mongoose.model('Movie', movieSchema);
 

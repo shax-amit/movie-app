@@ -12,6 +12,7 @@ import { getGenreNames } from '../utils/tmdbGenres';
 
 export default function Home() {
     const { movies, loading: moviesLoading, error: moviesError, deleteMovie, addMovie, updateMovie } = useMovies();
+    const { isAuthenticated } = useSelector((state) => state.auth);
     const favorites = useSelector(selectFavorites);
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -43,6 +44,11 @@ export default function Home() {
         .slice(0, 6);
 
     const handleToggleFavorite = async (movie, source) => {
+        if (!isAuthenticated) {
+            alert('Please login to add movies to your list!');
+            navigate('/login');
+            return;
+        }
         const favorited = isFavoriteMovie(movie);
 
         try {

@@ -78,6 +78,11 @@ export function getDb() {
       try {
         const query = {};
 
+        // Filter by user ID if provided
+        if (filters.userId) {
+          query.userId = filters.userId;
+        }
+
         // Search filter (title or description)
         if (filters.search) {
           query.$or = [

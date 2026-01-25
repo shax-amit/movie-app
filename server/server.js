@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import { initDatabase, getDb } from './database.js';
 import moviesRouter from './routes/movies.js';
+import authRouter from './routes/auth.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -53,6 +54,7 @@ app.get('/', (req, res) => {
 
 // Routes
 app.use('/api/movies', moviesRouter);
+app.use('/api/auth', authRouter);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

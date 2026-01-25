@@ -1,8 +1,12 @@
 import express from 'express';
 import { getDb } from '../database.js';
 import { validateMovie, validateMovieUpdate } from '../validation.js';
+import { protect } from '../middleware/auth.js';
 
 const router = express.Router();
+
+// Apply protection to all movie routes
+router.use(protect);
 
 // GET /api/movies - Get all movies
 router.get('/', async (req, res, next) => {
@@ -11,7 +15,7 @@ router.get('/', async (req, res, next) => {
     const db = getDb();
     const { search, genre, source } = req.query;
 
-    const filters = {};
+    const filters = { userId: req.user.id };
     if (search) filters.search = search;
     if (genre) filters.genre = genre;
     if (source) filters.source = source;
@@ -35,6 +39,11 @@ router.get('/:id', async (req, res, next) => {
     const { id } = req.params;
 
     const movie = await db.getById(id);
+
+    // Ensure user owns this movie
+    if (movie && movie.userId && movie.userId.toString() !== req.user.id) {
+      return res.status(403).json({ error: 'Not authorized for this movie' });
+    }
 
     if (!movie) {
       return res.status(404).json({ error: 'Movie not found' });
@@ -67,7 +76,8 @@ router.post('/', async (req, res, next) => {
       rating: movieData.rating,
       genre: movieData.genre.trim(),
       description: movieData.description?.trim() || null,
-      source: movieData.source || 'user'
+      source: movieData.source || 'user',
+      userId: req.user.id
     };
 
     if (movieData.posterPath) createData.posterPath = movieData.posterPath;
@@ -155,6 +165,11 @@ router.put('/:id', async (req, res, next) => {
       return res.status(400).json({ error: 'No fields to update' });
     }
 
+    // Verify ownership
+    if (existing.userId && existing.userId.toString() !== req.user.id) {
+      return res.status(403).json({ error: 'Not authorized to update this movie' });
+    }
+
     // Update movie
     const updatedMovie = await db.update(id, updateData);
     if (!updatedMovie) {
@@ -188,6 +203,11 @@ router.delete('/:id', async (req, res, next) => {
     /* if (movie.source === 'seed') {
       return res.status(403).json({ error: 'Cannot delete seed movies' });
     } */
+
+    // Verify ownership
+    if (movie.userId && movie.userId.toString() !== req.user.id) {
+      return res.status(403).json({ error: 'Not authorized to delete this movie' });
+    }
 
     // Delete movie
     const deleted = await db.delete(id);

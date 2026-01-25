@@ -16,12 +16,20 @@ export function useMovies() {
       setLoading(true);
       setError(null);
 
+      const token = localStorage.getItem('token');
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
       console.log('Fetching movies from:', `${API_BASE_URL}/movies`);
-      const response = await fetch(`${API_BASE_URL}/movies`);
+      const response = await fetch(`${API_BASE_URL}/movies`, { headers });
 
       console.log('Response status:', response.status, response.statusText);
 
       if (!response.ok) {
+        if (response.status === 401) {
+          // Silently fail or handle unauthorized
+          setMovies([]);
+          return;
+        }
         throw new Error(`Failed to fetch movies: ${response.status} ${response.statusText}`);
       }
 
@@ -32,7 +40,6 @@ export function useMovies() {
       const errorMessage = err.message || 'Failed to fetch movies';
       setError(errorMessage);
       console.error('Error fetching movies:', err);
-      console.error('API URL was:', `${API_BASE_URL}/movies`);
     } finally {
       setLoading(false);
     }
@@ -45,11 +52,13 @@ export function useMovies() {
   const addMovie = useCallback(async (movieData) => {
     try {
       setError(null);
+      const token = localStorage.getItem('token');
 
       const response = await fetch(`${API_BASE_URL}/movies`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(movieData),
       });
@@ -71,11 +80,13 @@ export function useMovies() {
   const updateMovie = useCallback(async (id, movieData) => {
     try {
       setError(null);
+      const token = localStorage.getItem('token');
 
       const response = await fetch(`${API_BASE_URL}/movies/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(movieData),
       });
@@ -99,9 +110,13 @@ export function useMovies() {
   const deleteMovie = useCallback(async (id) => {
     try {
       setError(null);
+      const token = localStorage.getItem('token');
 
       const response = await fetch(`${API_BASE_URL}/movies/${id}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
 
       if (!response.ok) {
