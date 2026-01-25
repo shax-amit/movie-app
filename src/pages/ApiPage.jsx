@@ -1,6 +1,6 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { toggleFavorite, addFavorite, loadFavorites, removeFavorite } from '../store/favoritesSlice';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useApi } from '../hooks/useApi';
 import { useMovies } from '../hooks/useMovies';
 import MovieCard from '../components/MovieCard';
@@ -14,14 +14,33 @@ export default function ApiPage() {
     const favorites = useSelector((state) => state.favorites.items);
     const { movies, addMovie, deleteMovie, updateMovie } = useMovies();
 
+    const [searchQuery, setSearchQuery] = useState('');
+    const [activeQuery, setActiveQuery] = useState('');
+
     const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY;
     const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
     const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w500';
 
+    // Construct the API URL based on whether there's an active search query
+    const apiUrl = useMemo(() => {
+        if (activeQuery) {
+            return `${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(activeQuery)}`;
+        }
+        return `${TMDB_BASE_URL}/movie/popular?api_key=${TMDB_API_KEY}&page=1`;
+    }, [activeQuery, TMDB_API_KEY]);
+
     // Use useApi hook for fetching movies from TMDB
-    const { data: moviesData, loading, error, refetch } = useApi(
-        `${TMDB_BASE_URL}/movie/popular?api_key=${TMDB_API_KEY}&page=1`
-    );
+    const { data: moviesData, loading, error, refetch } = useApi(apiUrl, {}, [apiUrl]);
+
+    const handleSearchSubmit = (e) => {
+        e.preventDefault();
+        setActiveQuery(searchQuery);
+    };
+
+    const handleClearSearch = () => {
+        setSearchQuery('');
+        setActiveQuery('');
+    };
 
     // Bootstrap: Load favorites from collection on load
     useEffect(() => {
@@ -142,7 +161,7 @@ export default function ApiPage() {
     if (loading) return (
         <div className="page-container">
             <div className="page-header">
-                <h1>Explore Trending</h1>
+                <h1>{activeQuery ? `Results for "${activeQuery}"` : 'Explore Trending'}</h1>
             </div>
             <div className="movies-grid">
                 {[...Array(8)].map((_, i) => <MovieSkeleton key={i} />)}
@@ -171,12 +190,35 @@ export default function ApiPage() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
             >
-                <h1>Explore Trending & Popular</h1>
-                <button onClick={refetch} className="refetch-btn" title="Refresh movies">
-                    🔄 Refresh
-                </button>
+                <div>
+                    <h1>{activeQuery ? `Search Results: ${activeQuery}` : 'Explore Trending & Popular'}</h1>
+                    <p className="api-note">Real-time data from The Movie Database (TMDB)</p>
+                </div>
+
+                <form className="api-search-form" onSubmit={handleSearchSubmit}>
+                    <div className="search-input-wrapper">
+                        <input
+                            type="text"
+                            placeholder="Search TMDB for movies..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="api-search-input"
+                        />
+                        {searchQuery && (
+                            <button
+                                type="button"
+                                className="clear-search-btn"
+                                onClick={handleClearSearch}
+                            >
+                                ✕
+                            </button>
+                        )}
+                    </div>
+                    <button type="submit" className="api-search-btn">
+                        🔍 Search
+                    </button>
+                </form>
             </motion.div>
-            <p className="api-note">Real-time data from The Movie Database (TMDB)</p>
 
             <motion.div
                 className="movies-grid"
