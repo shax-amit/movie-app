@@ -23,7 +23,8 @@ export default function SignupPage() {
         dispatch(authStart());
 
         try {
-            const response = await fetch('http://localhost:3001/api/auth/register', {
+            const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+            const response = await fetch(`${apiBase}/auth/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, email, password }),

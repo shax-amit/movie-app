@@ -24,7 +24,8 @@ function App() {
       const token = localStorage.getItem('token');
       if (token && !user) {
         try {
-          const response = await fetch('http://localhost:3001/api/auth/me', {
+          const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+          const response = await fetch(`${apiBase}/auth/me`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
           if (response.ok) {
