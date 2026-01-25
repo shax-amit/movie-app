@@ -24,7 +24,12 @@ function App() {
       const token = localStorage.getItem('token');
       if (token && !user) {
         try {
-          const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+          const apiBase = import.meta.env.VITE_API_URL;
+          if (!apiBase) {
+            console.error('VITE_API_URL is not defined. Please set it in your .env file.');
+            return;
+          }
+          console.log('App Auth Check - API URL:', apiBase);
           const response = await fetch(`${apiBase}/auth/me`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
