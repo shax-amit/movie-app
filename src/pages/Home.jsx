@@ -276,7 +276,7 @@ export default function Home() {
                                         title={movie.title}
                                         rating={Math.round(movie.vote_average)}
                                         genre={getGenreNames(movie.genre_ids)}
-                                        description={movie.overview?.substring(0, 100) + '...'}
+                                        description={movie.overview}
                                         image={movie.poster_path ? `${TMDB_IMAGE_BASE}${movie.poster_path}` : null}
                                         onFavoriteToggle={() => handleToggleFavorite(movie, 'tmdb')}
                                         onUpdateOpinion={(opinion) => handleUpdateOpinion(movie, opinion)}
@@ -324,7 +324,7 @@ export default function Home() {
                                         title={movie.title}
                                         rating={Math.round(movie.vote_average)}
                                         genre={getGenreNames(movie.genre_ids)}
-                                        description={movie.overview?.substring(0, 100) + '...'}
+                                        description={movie.overview}
                                         image={movie.poster_path ? `${TMDB_IMAGE_BASE}${movie.poster_path}` : null}
                                         onFavoriteToggle={() => handleToggleFavorite(movie, 'tmdb')}
                                         onUpdateOpinion={(opinion) => handleUpdateOpinion(movie, opinion)}

@@ -24,14 +24,56 @@ export default function MyListPage() {
     };
 
     // Bootstrap: Sync MongoDB collection to Redux favorites once loaded
-    // Also ensures Redux stays in sync with DB if movies are deleted elsewhere
     useEffect(() => {
         if (!loading && movies) {
             const dbFavorites = movies.filter(m => m.isFavorite);
             dispatch(loadFavorites(dbFavorites));
         }
     }, [movies, loading, dispatch]);
-    // ...
+
+    // Data Enrichment: Fetch missing years for TMDB movies
+    useEffect(() => {
+        const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY;
+        if (!TMDB_API_KEY) return;
+
+        const enrichMovies = async () => {
+            // Only target movies that don't have a year AND have an externalId
+            const moviesToEnrich = favorites.filter(m =>
+                m.source === 'tmdb' &&
+                !m.year &&
+                m.externalId &&
+                !m.enrichmentStarted // Custom flag to avoid double requests in one session
+            );
+
+            if (moviesToEnrich.length === 0) return;
+
+            // Mark them as processing in local state
+            moviesToEnrich.forEach(m => m.enrichmentStarted = true);
+
+            for (const movie of moviesToEnrich) {
+                try {
+                    console.log(`Enriching data for: ${movie.title}...`);
+                    const response = await fetch(
+                        `https://api.themoviedb.org/3/movie/${movie.externalId}?api_key=${TMDB_API_KEY}`
+                    );
+                    const data = await response.json();
+                    if (data.release_date) {
+                        const year = data.release_date.split('-')[0];
+                        // Update DB
+                        await updateMovie(movie.id, { year });
+                        // Update local Redux state
+                        dispatch(updateFavorite({ id: movie.id, updates: { year } }));
+                    }
+                } catch (err) {
+                    console.error(`Failed to enrich movie ${movie.title}:`, err);
+                }
+            }
+        };
+
+        if (favorites.length > 0) {
+            enrichMovies();
+        }
+    }, [favorites, updateMovie, dispatch]);
 
     const filteredFavorites = favorites.filter(movie => {
         const query = search.toLowerCase();
@@ -130,7 +172,7 @@ export default function MyListPage() {
                                 personalOpinion={movie.personalOpinion}
                                 trailerId={movie.trailerId}
                                 tmdbId={movie.externalId}
-                                year={movie.year}
+                                year={movie.year || movie.release_date?.split('-')[0]}
                                 variants={itemVariants}
                                 source={movie.source}
                             />

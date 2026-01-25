@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import TrailerModal from './TrailerModal';
+import MovieDetailsModal from './MovieDetailsModal';
 
 export default function MovieCard({
     id,
@@ -23,7 +24,8 @@ export default function MovieCard({
     tmdbId: initialTmdbId,
     year
 }) {
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+    const [isTrailerOpen, setIsTrailerOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [currentOpinion, setCurrentOpinion] = useState(personalOpinion || '');
     const [fetchedTrailerId, setFetchedTrailerId] = useState(trailerId || '');
@@ -81,10 +83,12 @@ export default function MovieCard({
                     transition: { duration: 0.2 }
                 }}
                 layout
+                onClick={() => setIsDetailsOpen(true)}
+                style={{ cursor: 'pointer' }}
             >
                 <div className="card-top">
                     <h3>{title}</h3>
-                    <div className="card-actions">
+                    <div className="card-actions" onClick={(e) => e.stopPropagation()}>
                         {onFavoriteToggle && (
                             <button
                                 type="button"
@@ -144,7 +148,7 @@ export default function MovieCard({
                 {description && <p className="description">{description}</p>}
 
                 {isFavorite && (
-                    <div className="opinion-section" style={{
+                    <div className="opinion-section" onClick={(e) => e.stopPropagation()} style={{
                         marginTop: '1.5rem',
                         padding: '1.25rem',
                         backgroundColor: '#ffffff',
@@ -238,7 +242,10 @@ export default function MovieCard({
                 {showTrailer && (
                     <button
                         className="trailer-btn"
-                        onClick={() => setIsModalOpen(true)}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setIsTrailerOpen(true);
+                        }}
                     >
                         <svg fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
                         Watch Trailer
@@ -246,7 +253,7 @@ export default function MovieCard({
                 )}
 
                 {imdbLink && (
-                    <p className="api-link">
+                    <p className="api-link" onClick={(e) => e.stopPropagation()}>
                         <a
                             href={imdbLink}
                             target="_blank"
@@ -259,10 +266,25 @@ export default function MovieCard({
             </motion.div>
 
             <TrailerModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
+                isOpen={isTrailerOpen}
+                onClose={() => setIsTrailerOpen(false)}
                 movieTitle={title}
                 trailerId={effectiveTrailerId}
+            />
+
+            <MovieDetailsModal
+                isOpen={isDetailsOpen}
+                onClose={() => setIsDetailsOpen(false)}
+                movie={{
+                    title,
+                    rating,
+                    genre,
+                    year,
+                    description,
+                    image,
+                    posterPath,
+                    personalOpinion
+                }}
             />
         </>
     );

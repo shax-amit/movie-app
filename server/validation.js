@@ -39,8 +39,8 @@ export function validateMovie(movie) {
     if (trimmedGenre.length < 2) {
       errors.genre = 'Genre must be at least 2 characters long';
     }
-    if (trimmedGenre.length > 50) {
-      errors.genre = 'Genre must be less than 50 characters';
+    if (trimmedGenre.length > 100) {
+      errors.genre = 'Genre must be less than 100 characters';
     }
   }
 
@@ -48,8 +48,8 @@ export function validateMovie(movie) {
   if (movie.description !== undefined && movie.description !== null) {
     if (typeof movie.description !== 'string') {
       errors.description = 'Description must be a string';
-    } else if (movie.description.length > 2000) {
-      errors.description = 'Description must be less than 2000 characters';
+    } else if (movie.description.length > 4000) {
+      errors.description = 'Description must be less than 4000 characters';
     }
   }
 
@@ -82,6 +82,13 @@ export function validateMovie(movie) {
       errors.personalOpinion = 'Personal opinion must be a string';
     } else if (movie.personalOpinion.length > 2000) {
       errors.personalOpinion = 'Personal opinion must be less than 2000 characters';
+    }
+  }
+
+  // Year validation (optional)
+  if (movie.year !== undefined && movie.year !== null) {
+    if (typeof movie.year !== 'string' && typeof movie.year !== 'number') {
+      errors.year = 'Year must be a string or number';
     }
   }
 
@@ -127,8 +134,8 @@ export function validateMovieUpdate(movie) {
       if (trimmedGenre.length < 2) {
         errors.genre = 'Genre must be at least 2 characters long';
       }
-      if (trimmedGenre.length > 50) {
-        errors.genre = 'Genre must be less than 50 characters';
+      if (trimmedGenre.length > 100) {
+        errors.genre = 'Genre must be less than 100 characters';
       }
     }
   }
@@ -136,8 +143,8 @@ export function validateMovieUpdate(movie) {
   if (movie.description !== undefined && movie.description !== null) {
     if (typeof movie.description !== 'string') {
       errors.description = 'Description must be a string';
-    } else if (movie.description.length > 2000) {
-      errors.description = 'Description must be less than 2000 characters';
+    } else if (movie.description.length > 4000) {
+      errors.description = 'Description must be less than 4000 characters';
     }
   }
 
@@ -166,6 +173,12 @@ export function validateMovieUpdate(movie) {
       errors.personalOpinion = 'Personal opinion must be a string';
     } else if (movie.personalOpinion.length > 2000) {
       errors.personalOpinion = 'Personal opinion must be less than 2000 characters';
+    }
+  }
+
+  if (movie.year !== undefined && movie.year !== null) {
+    if (typeof movie.year !== 'string' && typeof movie.year !== 'number') {
+      errors.year = 'Year must be a string or number';
     }
   }
 

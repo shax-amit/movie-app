@@ -236,7 +236,7 @@ export default function ApiPage() {
                                 title={movie.title}
                                 rating={Math.round(movie.vote_average)}
                                 genre={getGenreNames(movie.genre_ids)}
-                                description={movie.overview?.substring(0, 150) + '...'}
+                                description={movie.overview}
                                 image={movie.poster_path ? `${TMDB_IMAGE_BASE}${movie.poster_path}` : null}
                                 imdbLink={`https://www.themoviedb.org/movie/${movie.id}`}
                                 onFavoriteToggle={() => handleToggleFavorite(movie)}

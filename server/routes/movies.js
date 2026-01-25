@@ -75,6 +75,7 @@ router.post('/', async (req, res, next) => {
     if (movieData.trailerId) createData.trailerId = movieData.trailerId;
     if (movieData.personalOpinion) createData.personalOpinion = movieData.personalOpinion;
     if (movieData.isFavorite !== undefined) createData.isFavorite = movieData.isFavorite;
+    if (movieData.year) createData.year = movieData.year.toString();
 
     const newMovie = await db.create(createData);
 
@@ -145,6 +146,9 @@ router.put('/:id', async (req, res, next) => {
     }
     if (movieData.isFavorite !== undefined) {
       updateData.isFavorite = movieData.isFavorite;
+    }
+    if (movieData.year !== undefined) {
+      updateData.year = movieData.year?.toString() || null;
     }
 
     if (Object.keys(updateData).length === 0) {
