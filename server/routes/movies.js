@@ -18,7 +18,7 @@ router.get('/', async (req, res, next) => {
 
     const movies = await db.getAll(filters);
     console.log(`Found ${movies.length} movies`);
-    
+
     console.log('Sending response with', movies.length, 'movies');
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     res.json(movies);
@@ -157,9 +157,9 @@ router.delete('/:id', async (req, res, next) => {
     }
 
     // Don't allow deleting seed movies
-    if (movie.source === 'seed') {
+    /* if (movie.source === 'seed') {
       return res.status(403).json({ error: 'Cannot delete seed movies' });
-    }
+    } */
 
     // Delete movie
     const deleted = await db.delete(id);

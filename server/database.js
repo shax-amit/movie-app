@@ -3,41 +3,8 @@ import Movie from './models/Movie.js';
 
 let isConnected = false;
 
-// Seed movies data
-const SEED_MOVIES = [
-  {
-    title: 'Inception',
-    rating: 9,
-    genre: 'Sci-Fi',
-    description: 'A thief who steals corporate secrets through the use of dream-sharing technology.',
-    trailerId: 'YoHD9XEInc0',
-    source: 'seed'
-  },
-  {
-    title: 'The Dark Knight',
-    rating: 10,
-    genre: 'Action',
-    description: 'When the menace known as the Joker wreaks havoc and chaos on the people of Gotham.',
-    trailerId: 'EXeTwQWrcwY',
-    source: 'seed'
-  },
-  {
-    title: 'Interstellar',
-    rating: 8.5,
-    genre: 'Sci-Fi',
-    description: "A team of explorers travel through a wormhole in space in an attempt to ensure humanity's survival.",
-    trailerId: 'zSWdZVtXT7E',
-    source: 'seed'
-  },
-  {
-    title: 'Parasite',
-    rating: 9.5,
-    genre: 'Drama',
-    description: 'Greed and class discrimination threaten the newly formed symbiotic relationship between the wealthy Park family and the destitute Kim clan.',
-    trailerId: '5xH0HfJHsaY',
-    source: 'seed'
-  }
-];
+// Seed movies data - Empty as we migrated to TMDB
+const SEED_MOVIES = [];
 
 /**
  * Connect to MongoDB
@@ -184,9 +151,9 @@ export function getDb() {
           return false;
         }
 
-        if (movie.source === 'seed') {
+        /* if (movie.source === 'seed') {
           throw new Error('Cannot delete seed movies');
-        }
+        } */
 
         await Movie.findByIdAndDelete(id);
         return true;
