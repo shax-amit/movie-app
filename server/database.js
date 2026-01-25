@@ -42,7 +42,32 @@ async function seedDatabase() {
       await Movie.insertMany(SEED_MOVIES);
       console.log('✅ Database seeded with', SEED_MOVIES.length, 'movies');
     } else {
-      // Cleanup: Remove explicit null externalId to allow sparse unique index to work
+      // Index Migration: Drop the old index and create a partial index
+      try {
+        const collection = Movie.collection;
+        // Check if index exists before trying to drop it
+        const indexes = await collection.indexes();
+        const hasOldIndex = indexes.some(idx => idx.name === 'externalId_1_userId_1');
+
+        if (hasOldIndex) {
+          console.log('🔄 Dropping old movie unique index...');
+          await collection.dropIndex('externalId_1_userId_1');
+        }
+
+        console.log('✨ Creating partial unique index for externalId + userId...');
+        await collection.createIndex(
+          { externalId: 1, userId: 1 },
+          {
+            unique: true,
+            partialFilterExpression: { externalId: { $type: "string" } },
+            name: 'externalId_1_userId_1_partial'
+          }
+        );
+      } catch (err) {
+        console.warn('⚠️ Map/Index migration warning (might already be fixed):', err.message);
+      }
+
+      // Cleanup: Remove explicit null externalId to allow index to work smoothly
       const result = await Movie.updateMany(
         { externalId: null },
         { $unset: { externalId: "" } }

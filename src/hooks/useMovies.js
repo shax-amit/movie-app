@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { API_BASE_URL } from '../config';
 
-const API_BASE_URL_LOCAL = API_BASE_URL; // Using centralized config
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const TMDB_KEY = import.meta.env.VITE_TMDB_API_KEY;
 
 /**
  * Custom hook for managing movies with CRUD operations
