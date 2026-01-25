@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { updateFavorite } from '../store/favoritesSlice';
 import { getGenreNames } from '../utils/tmdbGenres';
+import { API_BASE_URL, TMDB_API_KEY, TMDB_BASE_URL, TMDB_IMAGE_BASE } from '../config';
 
 export default function Home() {
     const { movies, loading: moviesLoading, error: moviesError, deleteMovie, addMovie, updateMovie } = useMovies();
@@ -17,9 +18,6 @@ export default function Home() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY;
-    const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
-    const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w500';
 
     // Use useApi hook to fetch trending movie recommendations from TMDB (Daily trends)
     const { data: trendingData, loading: trendingLoading } = useApi(

@@ -22,11 +22,54 @@ export async function connectDatabase() {
     isConnected = true;
     console.log('✅ Connected to MongoDB');
 
-    // Seed database if empty
+    // Run migrations and seed
+    await runDatabaseMigrations();
     await seedDatabase();
   } catch (error) {
     console.error('❌ MongoDB connection error:', error);
     throw error;
+  }
+}
+
+/**
+ * Run necessary database migrations (indexes, cleanups)
+ */
+async function runDatabaseMigrations() {
+  try {
+    const collection = Movie.collection;
+    const indexes = await collection.indexes();
+
+    // 1. Handle legacy unique index
+    const hasOldIndex = indexes.some(idx => idx.name === 'externalId_1_userId_1');
+    if (hasOldIndex) {
+      console.log('🔄 Dropping legacy movie unique index...');
+      await collection.dropIndex('externalId_1_userId_1');
+    }
+
+    // 2. Ensure partial unique index exists
+    const hasNewIndex = indexes.some(idx => idx.name === 'externalId_1_userId_1_partial');
+    if (!hasNewIndex) {
+      console.log('✨ Creating partial unique index for externalId + userId...');
+      await collection.createIndex(
+        { externalId: 1, userId: 1 },
+        {
+          unique: true,
+          partialFilterExpression: { externalId: { $type: "string" } },
+          name: 'externalId_1_userId_1_partial'
+        }
+      );
+    }
+
+    // 3. Cleanup existing nulls
+    const result = await Movie.updateMany(
+      { externalId: null },
+      { $unset: { externalId: "" } }
+    );
+    if (result.modifiedCount > 0) {
+      console.log(`🧹 Cleaned up ${result.modifiedCount} movies with null externalId`);
+    }
+  } catch (error) {
+    console.warn('⚠️ Database migration warning:', error.message);
   }
 }
 
@@ -41,40 +84,6 @@ async function seedDatabase() {
       console.log('📦 Seeding database with initial movies...');
       await Movie.insertMany(SEED_MOVIES);
       console.log('✅ Database seeded with', SEED_MOVIES.length, 'movies');
-    } else {
-      // Index Migration: Drop the old index and create a partial index
-      try {
-        const collection = Movie.collection;
-        // Check if index exists before trying to drop it
-        const indexes = await collection.indexes();
-        const hasOldIndex = indexes.some(idx => idx.name === 'externalId_1_userId_1');
-
-        if (hasOldIndex) {
-          console.log('🔄 Dropping old movie unique index...');
-          await collection.dropIndex('externalId_1_userId_1');
-        }
-
-        console.log('✨ Creating partial unique index for externalId + userId...');
-        await collection.createIndex(
-          { externalId: 1, userId: 1 },
-          {
-            unique: true,
-            partialFilterExpression: { externalId: { $type: "string" } },
-            name: 'externalId_1_userId_1_partial'
-          }
-        );
-      } catch (err) {
-        console.warn('⚠️ Map/Index migration warning (might already be fixed):', err.message);
-      }
-
-      // Cleanup: Remove explicit null externalId to allow index to work smoothly
-      const result = await Movie.updateMany(
-        { externalId: null },
-        { $unset: { externalId: "" } }
-      );
-      if (result.modifiedCount > 0) {
-        console.log(`🧹 Cleaned up ${result.modifiedCount} movies with null externalId`);
-      }
     }
   } catch (error) {
     console.error('Error seeding database:', error);

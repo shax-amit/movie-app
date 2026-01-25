@@ -9,6 +9,7 @@ import MovieSkeleton from '../components/MovieSkeleton';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getGenreNames } from '../utils/tmdbGenres';
 import { updateFavorite } from '../store/favoritesSlice';
+import { API_BASE_URL, TMDB_API_KEY, TMDB_BASE_URL, TMDB_IMAGE_BASE } from '../config';
 
 export default function ApiPage() {
     const dispatch = useDispatch();
@@ -20,9 +21,6 @@ export default function ApiPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [activeQuery, setActiveQuery] = useState('');
 
-    const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY;
-    const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
-    const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w500';
 
     // Construct the API URL based on whether there's an active search query
     const apiUrl = useMemo(() => {
