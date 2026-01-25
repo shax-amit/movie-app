@@ -6,11 +6,12 @@ import { useMovies } from '../hooks/useMovies';
 import MovieCard from '../components/MovieCard';
 import MovieSkeleton from '../components/MovieSkeleton';
 import { motion, AnimatePresence } from 'framer-motion';
+import { updateFavorite } from '../store/favoritesSlice';
 
 export default function ApiPage() {
     const dispatch = useDispatch();
     const favorites = useSelector((state) => state.favorites.items);
-    const { movies, addMovie, deleteMovie } = useMovies();
+    const { movies, addMovie, deleteMovie, updateMovie } = useMovies();
 
     const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY;
     const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
@@ -31,9 +32,9 @@ export default function ApiPage() {
     const handleToggleFavorite = async (movie) => {
         const favorited = isFavorite(movie);
 
-        try {
-            if (favorited) {
-                // UN-FAVORITE: Delete from DB and Redux
+        if (favorited) {
+            // UN-FAVORITE: Delete from DB and Redux
+            try {
                 const dbMovie = movies.find(m =>
                     (m.externalId && movie.id && m.externalId === movie.id.toString()) ||
                     (m.title === movie.title)
@@ -45,32 +46,51 @@ export default function ApiPage() {
                 } else {
                     dispatch(removeFavorite({ title: movie.title }));
                 }
-            } else {
-                // FAVORITE: Save to DB and Redux
-                const alreadySaved = movies.find(m =>
-                    (m.externalId && movie.id && m.externalId === movie.id.toString()) ||
-                    (m.title === movie.title)
-                );
-
-                if (alreadySaved) {
-                    dispatch(addFavorite(alreadySaved));
-                } else {
-                    const movieToSave = {
-                        title: movie.title,
-                        rating: Math.round(movie.vote_average),
-                        genre: 'International',
-                        description: movie.overview,
-                        posterPath: `${TMDB_IMAGE_BASE}${movie.poster_path}`,
-                        externalId: movie.id.toString(),
-                        source: 'tmdb'
-                    };
-
-                    const savedMovie = await addMovie(movieToSave);
-                    dispatch(addFavorite(savedMovie));
+            } catch (err) {
+                console.error('Failed to un-favorite', err);
+            }
+        } else {
+            // FAVORITE: Save directly
+            try {
+                const existingInDb = movies.find(m => m.externalId === (movie.id?.toString()));
+                if (existingInDb) {
+                    dispatch(addFavorite(existingInDb));
+                    return;
                 }
+
+                const movieToSave = {
+                    title: movie.title,
+                    rating: Math.round(movie.vote_average),
+                    genre: 'International',
+                    description: movie.overview,
+                    posterPath: `${TMDB_IMAGE_BASE}${movie.poster_path}`,
+                    externalId: movie.id.toString(),
+                    source: 'tmdb'
+                };
+                const savedMovie = await addMovie(movieToSave);
+                dispatch(addFavorite(savedMovie));
+            } catch (err) {
+                console.error('Failed to favorite', err);
+            }
+        }
+    };
+
+    const handleUpdateOpinion = async (movie, opinion) => {
+        try {
+            const dbMovie = movies.find(m =>
+                (m.externalId && movie.id && m.externalId.toString() === movie.id.toString()) ||
+                (m.id && movie.id && m.id.toString() === movie.id.toString()) ||
+                (m.title && movie.title && m.title.toLowerCase() === movie.title.toLowerCase())
+            );
+
+            if (dbMovie) {
+                await updateMovie(dbMovie.id, { personalOpinion: opinion });
+                dispatch(updateFavorite({ id: dbMovie.id, updates: { personalOpinion: opinion } }));
+            } else {
+                console.warn('Could not find movie in collection to update opinion', movie.title);
             }
         } catch (err) {
-            console.error('Failed to toggle favorite', err);
+            console.error('Failed to update opinion', err);
         }
     };
 
@@ -159,7 +179,12 @@ export default function ApiPage() {
                                 image={movie.poster_path ? `${TMDB_IMAGE_BASE}${movie.poster_path}` : null}
                                 imdbLink={`https://www.themoviedb.org/movie/${movie.id}`}
                                 onFavoriteToggle={() => handleToggleFavorite(movie)}
+                                onUpdateOpinion={(opinion) => handleUpdateOpinion(movie, opinion)}
                                 isFavorite={isFavorite(movie)}
+                                personalOpinion={movies.find(m =>
+                                    (m.externalId && movie.id && m.externalId === movie.id.toString()) ||
+                                    (m.title === movie.title)
+                                )?.personalOpinion}
                                 variants={itemVariants}
                             />
                         );

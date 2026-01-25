@@ -67,7 +67,10 @@ router.post('/', async (req, res, next) => {
       rating: movieData.rating,
       genre: movieData.genre.trim(),
       description: movieData.description?.trim() || null,
+      posterPath: movieData.posterPath?.trim() || null,
+      externalId: movieData.externalId?.toString() || null,
       trailerId: movieData.trailerId?.trim() || null,
+      personalOpinion: movieData.personalOpinion?.trim() || null,
       source: movieData.source || 'user'
     });
 
@@ -119,8 +122,17 @@ router.put('/:id', async (req, res, next) => {
     if (movieData.description !== undefined) {
       updateData.description = movieData.description?.trim() || null;
     }
+    if (movieData.posterPath !== undefined) {
+      updateData.posterPath = movieData.posterPath?.trim() || null;
+    }
+    if (movieData.externalId !== undefined) {
+      updateData.externalId = movieData.externalId?.toString() || null;
+    }
     if (movieData.trailerId !== undefined) {
       updateData.trailerId = movieData.trailerId?.trim() || null;
+    }
+    if (movieData.personalOpinion !== undefined) {
+      updateData.personalOpinion = movieData.personalOpinion?.trim() || null;
     }
 
     if (Object.keys(updateData).length === 0) {

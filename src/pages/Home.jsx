@@ -8,9 +8,10 @@ import MovieCard from '../components/MovieCard';
 import MovieSkeleton from '../components/MovieSkeleton';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { updateFavorite } from '../store/favoritesSlice';
 
 export default function Home() {
-    const { movies, loading: moviesLoading, error: moviesError, deleteMovie, addMovie } = useMovies();
+    const { movies, loading: moviesLoading, error: moviesError, deleteMovie, addMovie, updateMovie } = useMovies();
     const [filter, setFilter] = useState('');
     const debouncedFilter = useDebounce(filter, 500);
     const favorites = useSelector(selectFavorites);
@@ -67,16 +68,14 @@ export default function Home() {
                     await deleteMovie(dbMovie.id);
                     dispatch(removeFavorite(dbMovie.id));
                 } else {
-                    // Fallback to title-based removal for API-only states
                     dispatch(removeFavorite({ title: movie.title }));
                 }
             } catch (err) {
                 console.error('Failed to un-favorite', err);
             }
         } else {
-            // FAVORITE: Save to DB and Redux
+            // FAVORITE: Save directly
             try {
-                // Ensure we don't save duplicates even if stale local state
                 const existingInDb = movies.find(m => m.externalId === (movie.id?.toString()));
                 if (existingInDb) {
                     dispatch(addFavorite(existingInDb));
@@ -101,6 +100,26 @@ export default function Home() {
             } catch (err) {
                 console.error('Failed to favorite', err);
             }
+        }
+    };
+
+    const handleUpdateOpinion = async (movie, opinion) => {
+        try {
+            // Find the movie in our local MongoDB collection state
+            const dbMovie = movies.find(m =>
+                (m.externalId && movie.id && m.externalId.toString() === movie.id.toString()) ||
+                (m.id && movie.id && m.id.toString() === movie.id.toString()) ||
+                (m.title && movie.title && m.title.toLowerCase() === movie.title.toLowerCase())
+            );
+
+            if (dbMovie) {
+                await updateMovie(dbMovie.id, { personalOpinion: opinion });
+                dispatch(updateFavorite({ id: dbMovie.id, updates: { personalOpinion: opinion } }));
+            } else {
+                console.warn('Could not find movie in collection to update opinion', movie.title);
+            }
+        } catch (err) {
+            console.error('Failed to update opinion', err);
         }
     };
 
@@ -262,7 +281,12 @@ export default function Home() {
                                         description={movie.overview?.substring(0, 100) + '...'}
                                         image={movie.poster_path ? `${TMDB_IMAGE_BASE}${movie.poster_path}` : null}
                                         onFavoriteToggle={() => handleToggleFavorite(movie, 'tmdb')}
+                                        onUpdateOpinion={(opinion) => handleUpdateOpinion(movie, opinion)}
                                         isFavorite={isFavoriteMovie(movie)}
+                                        personalOpinion={movies.find(m =>
+                                            (m.externalId && movie.id && m.externalId === movie.id.toString()) ||
+                                            (m.title === movie.title)
+                                        )?.personalOpinion}
                                         variants={itemVariants}
                                     />
                                 ))}
@@ -305,7 +329,9 @@ export default function Home() {
                                     }}
                                     onEdit={() => navigate('/form', { state: { movie } })}
                                     onFavoriteToggle={() => handleToggleFavorite(movie, 'user')}
+                                    onUpdateOpinion={(opinion) => handleUpdateOpinion(movie, opinion)}
                                     isFavorite={isFavoriteMovie(movie)}
+                                    personalOpinion={movie.personalOpinion}
                                     trailerId={movie.trailerId}
                                     variants={itemVariants}
                                 />
@@ -314,6 +340,8 @@ export default function Home() {
                     </motion.div>
                 </section>
             )}
+
+
 
             {(filteredWeeklyPicks.length > 0 || weeklyPicksLoading) && (
                 <section className="section">
@@ -343,7 +371,12 @@ export default function Home() {
                                         description={movie.overview?.substring(0, 100) + '...'}
                                         image={movie.poster_path ? `${TMDB_IMAGE_BASE}${movie.poster_path}` : null}
                                         onFavoriteToggle={() => handleToggleFavorite(movie, 'tmdb')}
+                                        onUpdateOpinion={(opinion) => handleUpdateOpinion(movie, opinion)}
                                         isFavorite={isFavoriteMovie(movie)}
+                                        personalOpinion={movies.find(m =>
+                                            (m.externalId && movie.id && m.externalId === movie.id.toString()) ||
+                                            (m.title === movie.title)
+                                        )?.personalOpinion}
                                         variants={itemVariants}
                                     />
                                 ))}

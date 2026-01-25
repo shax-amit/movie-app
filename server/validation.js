@@ -76,6 +76,15 @@ export function validateMovie(movie) {
     }
   }
 
+  // Personal Opinion validation (optional)
+  if (movie.personalOpinion !== undefined && movie.personalOpinion !== null) {
+    if (typeof movie.personalOpinion !== 'string') {
+      errors.personalOpinion = 'Personal opinion must be a string';
+    } else if (movie.personalOpinion.length > 2000) {
+      errors.personalOpinion = 'Personal opinion must be less than 2000 characters';
+    }
+  }
+
   return {
     valid: Object.keys(errors).length === 0,
     errors
@@ -149,6 +158,14 @@ export function validateMovieUpdate(movie) {
       errors.trailerId = 'Trailer ID must be a string';
     } else if (movie.trailerId.trim().length > 50) {
       errors.trailerId = 'Trailer ID must be less than 50 characters';
+    }
+  }
+
+  if (movie.personalOpinion !== undefined && movie.personalOpinion !== null) {
+    if (typeof movie.personalOpinion !== 'string') {
+      errors.personalOpinion = 'Personal opinion must be a string';
+    } else if (movie.personalOpinion.length > 2000) {
+      errors.personalOpinion = 'Personal opinion must be less than 2000 characters';
     }
   }
 

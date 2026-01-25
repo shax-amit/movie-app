@@ -53,10 +53,18 @@ const favoritesSlice = createSlice({
       state.items = action.payload;
       state.lastUpdated = new Date().toISOString();
     },
+    updateFavorite: (state, action) => {
+      const { id, updates } = action.payload;
+      const index = state.items.findIndex((fav) => fav.id === id);
+      if (index !== -1) {
+        state.items[index] = { ...state.items[index], ...updates };
+        state.lastUpdated = new Date().toISOString();
+      }
+    },
   },
 });
 
-export const { addFavorite, removeFavorite, toggleFavorite, clearFavorites, loadFavorites } =
+export const { addFavorite, removeFavorite, toggleFavorite, clearFavorites, loadFavorites, updateFavorite } =
   favoritesSlice.actions;
 
 // Selectors

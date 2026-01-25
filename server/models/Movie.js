@@ -48,6 +48,12 @@ const movieSchema = new mongoose.Schema({
     type: String,
     enum: ['seed', 'user', 'tmdb'],
     default: 'user'
+  },
+  personalOpinion: {
+    type: String,
+    trim: true,
+    maxlength: 1000,
+    default: null
   }
 }, {
   timestamps: true,

@@ -5,13 +5,23 @@ import { useMovies } from '../hooks/useMovies';
 import MovieCard from '../components/MovieCard';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { updateFavorite } from '../store/favoritesSlice';
 
 export default function MyListPage() {
     const favorites = useSelector(selectFavorites);
-    const { movies, deleteMovie, loading } = useMovies();
+    const { movies, deleteMovie, updateMovie, loading } = useMovies();
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const [search, setSearch] = useState('');
+
+    const handleUpdateOpinion = async (movie, opinion) => {
+        try {
+            await updateMovie(movie.id, { personalOpinion: opinion });
+            dispatch(updateFavorite({ id: movie.id, updates: { personalOpinion: opinion } }));
+        } catch (err) {
+            console.error('Failed to update opinion', err);
+        }
+    };
 
     // Bootstrap: Sync MongoDB collection to Redux favorites once loaded
     useEffect(() => {
@@ -111,6 +121,8 @@ export default function MyListPage() {
                                 }}
                                 isFavorite={true}
                                 onEdit={movie.source === 'user' ? () => navigate('/form', { state: { movie } }) : null}
+                                onUpdateOpinion={(opinion) => handleUpdateOpinion(movie, opinion)}
+                                personalOpinion={movie.personalOpinion}
                                 trailerId={movie.trailerId}
                                 variants={itemVariants}
                             />

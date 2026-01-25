@@ -27,10 +27,7 @@ app.use((req, res, next) => {
 });
 
 // Initialize database (async)
-initDatabase().catch((error) => {
-  console.error('Failed to initialize database:', error);
-  process.exit(1);
-});
+
 
 // Root endpoint
 app.get('/', (req, res) => {
@@ -103,12 +100,23 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-  console.log(`📡 API endpoints:`);
-  console.log(`   GET  http://localhost:${PORT}/api/movies`);
-  console.log(`   GET  http://localhost:${PORT}/api/health`);
-});
+// Initialize database and start server
+const startServer = async () => {
+  try {
+    await initDatabase();
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on http://localhost:${PORT}`);
+      console.log(`📡 API endpoints:`);
+      console.log(`   GET  http://localhost:${PORT}/api/movies`);
+      console.log(`   GET  http://localhost:${PORT}/api/health`);
+    });
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+startServer();
 
 // Handle uncaught errors
 process.on('uncaughtException', (error) => {
