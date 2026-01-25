@@ -9,6 +9,7 @@ export default function MovieCard({
     genre,
     description,
     onDelete,
+    onEdit,
     onFavoriteToggle,
     isFavorite,
     image,
@@ -43,6 +44,24 @@ export default function MovieCard({
                                 title={isFavorite ? 'Remove from My List' : 'Add to My List'}
                             >
                                 {isFavorite ? '❤️' : '🤍'}
+                            </button>
+                        )}
+                        {onEdit && (
+                            <button
+                                type="button"
+                                className="edit-btn"
+                                onClick={onEdit}
+                                title="Edit"
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    fontSize: '1.2rem',
+                                    padding: '5px',
+                                    color: '#4a90e2'
+                                }}
+                            >
+                                ✎
                             </button>
                         )}
                         {onDelete && (

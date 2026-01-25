@@ -3,11 +3,14 @@ import { useSelector, useDispatch } from 'react-redux';
 import { selectFavorites, toggleFavorite, removeFavorite } from '../store/favoritesSlice';
 import MovieCard from '../components/MovieCard';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 export default function MyListPage() {
     const favorites = useSelector(selectFavorites);
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const [search, setSearch] = useState('');
+    // ...
 
     const filteredFavorites = favorites.filter(movie => {
         const query = search.toLowerCase();
@@ -87,6 +90,7 @@ export default function MyListPage() {
                                 description={movie.description}
                                 onFavoriteToggle={() => dispatch(toggleFavorite(movie))}
                                 isFavorite={true}
+                                onEdit={movie.source === 'user' ? () => navigate('/form', { state: { movie } }) : null}
                                 trailerId={movie.trailerId}
                                 variants={itemVariants}
                             />

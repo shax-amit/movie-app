@@ -1,13 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { useMovies } from '../hooks/useMovies';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export default function FormPage() {
     // Use useLocalStorage for fake logged-in user
     const [user, setUser] = useLocalStorage('fake-user', null);
-    const { addMovie } = useMovies();
+    const { addMovie, updateMovie } = useMovies();
     const navigate = useNavigate();
+    const location = useLocation();
+
+    // Check if we are in edit mode (movie data passed in location state)
+    const editMovie = location.state?.movie;
+    const isEditMode = !!editMovie;
 
     const [formData, setFormData] = useState({
         title: '',
@@ -15,6 +20,18 @@ export default function FormPage() {
         genre: 'Action',
         review: ''
     });
+
+    // Initialize form with movie data if in edit mode
+    useEffect(() => {
+        if (isEditMode) {
+            setFormData({
+                title: editMovie.title || '',
+                rating: editMovie.rating || '',
+                genre: editMovie.genre || 'Action',
+                review: editMovie.description || ''
+            });
+        }
+    }, [isEditMode, editMovie]);
 
     const [errors, setErrors] = useState({});
     const [submitError, setSubmitError] = useState(null);
@@ -43,13 +60,19 @@ export default function FormPage() {
         if (validate()) {
             setIsSubmitting(true);
             try {
-                await addMovie({
+                const movieData = {
                     title: formData.title,
                     rating: Number(formData.rating),
                     genre: formData.genre,
                     description: formData.review
-                });
-                
+                };
+
+                if (isEditMode) {
+                    await updateMovie(editMovie.id, movieData);
+                } else {
+                    await addMovie(movieData);
+                }
+
                 // Reset form on success
                 setFormData({
                     title: '',
@@ -58,11 +81,11 @@ export default function FormPage() {
                     review: ''
                 });
                 setErrors({});
-                
-                // Navigate to home page to see the new movie
-                navigate('/');
+
+                // Navigate back
+                navigate(-1);
             } catch (err) {
-                setSubmitError(err.message || 'Failed to add movie. Please try again.');
+                setSubmitError(err.message || `Failed to ${isEditMode ? 'update' : 'add'} movie. Please try again.`);
             } finally {
                 setIsSubmitting(false);
             }
@@ -80,7 +103,7 @@ export default function FormPage() {
     return (
         <div className="page-container">
             <div className="form-header">
-                <h1>Add New Movie</h1>
+                <h1>{isEditMode ? 'Edit Movie' : 'Add New Movie'}</h1>
             </div>
             <form onSubmit={handleSubmit} className="movie-form">
                 <div className="form-group">
@@ -129,10 +152,10 @@ export default function FormPage() {
                 </div>
 
                 {submitError && (
-                    <div className="error-message" style={{ 
-                        padding: '1rem', 
-                        backgroundColor: '#fee', 
-                        color: '#c33', 
+                    <div className="error-message" style={{
+                        padding: '1rem',
+                        backgroundColor: '#fee',
+                        color: '#c33',
                         borderRadius: '4px',
                         marginBottom: '1rem'
                     }}>
@@ -140,13 +163,31 @@ export default function FormPage() {
                     </div>
                 )}
 
-                <button 
-                    type="submit" 
-                    className="submit-btn"
-                    disabled={isSubmitting}
-                >
-                    {isSubmitting ? 'Adding...' : 'Add Movie'}
-                </button>
+                <div className="form-buttons" style={{ display: 'flex', gap: '1rem' }}>
+                    <button
+                        type="submit"
+                        className="submit-btn"
+                        disabled={isSubmitting}
+                        style={{ flex: 1 }}
+                    >
+                        {isSubmitting ? (isEditMode ? 'Updating...' : 'Adding...') : (isEditMode ? 'Update Movie' : 'Add Movie')}
+                    </button>
+                    <button
+                        type="button"
+                        className="cancel-btn"
+                        onClick={() => navigate(-1)}
+                        style={{
+                            padding: '0.8rem 1.5rem',
+                            backgroundColor: '#eee',
+                            border: 'none',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            color: '#666'
+                        }}
+                    >
+                        Cancel
+                    </button>
+                </div>
             </form>
         </div>
     );

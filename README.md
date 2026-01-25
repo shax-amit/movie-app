@@ -13,42 +13,35 @@ The application uses React Router for navigation between pages. All routes are d
 
 Navigation is handled through the `Navbar` component using React Router's `<Link>` components, which update the URL without page reload.
 
-## Global State (React Context)
+## Global State (Redux Toolkit)
 
-The application uses **FavoritesContext** to manage favorite movies globally across all components.
+The application uses **Redux Toolkit** to manage favorite movies and global application state.
 
-### Context Details
+### Store Details
 
-- **File:** `src/context/FavoritesContext.jsx`
-- **What it stores:** An array of favorite movie objects
-- **Storage:** Favorites are persisted in `localStorage` (key: `movie-favorites`)
+- **File:** `src/store/store.js`
+- **Slices:** `favoritesSlice.js`
+- **What it stores:** An array of favorite movie objects and a `lastUpdated` timestamp.
+- **Persistence:** Favorites are manually persisted in `localStorage` (key: `movie-favorites`) and rehydrated on app mount in `App.jsx`.
 
-### Context API
+### Favorites API (Redux Actions)
 
-The context provides the following functions and data:
+The store provides the following actions:
 
-- `favorites` - Array of favorite movie objects
-- `favoritesCount` - Number of favorites (for display)
-- `addFavorite(movie)` - Add a movie to favorites
-- `removeFavorite(movieId)` - Remove a movie from favorites
-- `isFavorite(movieId)` - Check if a movie is already favorited
-- `toggleFavorite(movie)` - Toggle favorite status (add/remove)
+- `addFavorite(movie)` - Add a movie to favorites.
+- `removeFavorite(movieId)` - Remove a movie from favorites.
+- `toggleFavorite(movie)` - Toggle favorite status (add/remove).
+- `clearFavorites()` - Clear all favorites.
+- `loadFavorites(items)` - Load favorites from storage.
 
 ### Usage in Components
 
-1. **API Page (`src/pages/ApiPage.jsx`):**
-   - Each movie card has a star button (☆/⭐) to add/remove from favorites
-   - Shows visual feedback when a movie is favorited
-   - Uses `toggleFavorite()` and `isFavorite()` functions
+1. **Home Page & API Page:**
+   - Use `useSelector` to read favorites and `useDispatch` to toggle them.
+   - Shows heart icon (❤️/🤍) for visual feedback.
 
-2. **Home Page (`src/pages/Home.jsx`):**
-   - Displays a "⭐ My Favorites" section at the top (when favorites exist)
-   - Shows all favorited movies with ability to remove them
-   - Uses `favorites` array and `removeFavorite()` function
-
-3. **Navbar (`src/components/Navbar.jsx`):**
-   - Displays favorites count badge: "⭐ Favorites (X)" when count > 0
-   - Uses `favoritesCount` from context
+2. **Navbar:**
+   - Displays favorites count badge dynamically.
 
 ## Project Structure & Pages
 
@@ -244,8 +237,9 @@ MongoDB stores movies in a `movies` collection with the following schema:
 
 ### Features
 - Server-side validation
-- Error handling
-- Loading states
-- CRUD operations
-- Search and filtering
-- Local storage (for favorites)
+- Full CRUD operations (Create, Read, Update, Delete)
+- Global State with Redux Toolkit
+- Custom Hooks (useApi, useMovies, etc.)
+- Rich UI with Framer Motion animations
+- Dark/Light mode support
+- Responsive design

@@ -7,6 +7,7 @@ import { useMovies } from '../hooks/useMovies';
 import MovieCard from '../components/MovieCard';
 import MovieSkeleton from '../components/MovieSkeleton';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 export default function Home() {
     const { movies, loading: moviesLoading, error: moviesError, deleteMovie } = useMovies();
@@ -14,6 +15,8 @@ export default function Home() {
     const debouncedFilter = useDebounce(filter, 500);
     const favorites = useSelector(selectFavorites);
     const dispatch = useDispatch();
+    const navigate = useNavigate();
+    // ...
 
     // Use useApi hook to fetch trending movie recommendations
     const { data: trendingData, loading: trendingLoading } = useApi(
@@ -97,8 +100,8 @@ export default function Home() {
     if (moviesError && !movies.length) {
         return (
             <div className="page-container">
-                <div className="error-state" style={{ 
-                    padding: '2rem', 
+                <div className="error-state" style={{
+                    padding: '2rem',
                     textAlign: 'center',
                     backgroundColor: '#fee',
                     color: '#c33',
@@ -110,8 +113,8 @@ export default function Home() {
                     <p style={{ marginTop: '1rem', fontSize: '0.9rem', color: '#666' }}>
                         Make sure the server is running on http://localhost:3001
                     </p>
-                    <button 
-                        onClick={() => window.location.reload()} 
+                    <button
+                        onClick={() => window.location.reload()}
                         style={{
                             marginTop: '1rem',
                             padding: '0.5rem 1rem',
@@ -248,6 +251,7 @@ export default function Home() {
                                             }
                                         }
                                     }}
+                                    onEdit={() => navigate('/form', { state: { movie } })}
                                     onFavoriteToggle={() => handleToggleFavorite(movie)}
                                     isFavorite={isFavoriteMovie(movie.id)}
                                     trailerId={movie.trailerId}
