@@ -1,6 +1,7 @@
 import { useSelector, useDispatch } from 'react-redux';
-import { toggleFavorite } from '../store/favoritesSlice';
+import { toggleFavorite, addFavorite } from '../store/favoritesSlice';
 import { useApi } from '../hooks/useApi';
+import { useMovies } from '../hooks/useMovies';
 import MovieCard from '../components/MovieCard';
 import MovieSkeleton from '../components/MovieSkeleton';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,18 +9,49 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function ApiPage() {
     const dispatch = useDispatch();
     const favorites = useSelector((state) => state.favorites.items);
+    const { movies, addMovie } = useMovies();
 
-    // Use useApi hook for fetching movies
+    const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY;
+    const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
+    const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w500';
+
+    // Use useApi hook for fetching movies from TMDB
     const { data: moviesData, loading, error, refetch } = useApi(
-        'https://ghibliapi.vercel.app/films?limit=12'
+        `${TMDB_BASE_URL}/movie/popular?api_key=${TMDB_API_KEY}&page=1`
     );
 
-    const handleToggleFavorite = (movieData) => {
-        dispatch(toggleFavorite(movieData));
+    const handleToggleFavorite = async (movie) => {
+        try {
+            // Check if already in our collection (by externalId)
+            const alreadySaved = movies.find(m => m.externalId === movie.id.toString());
+
+            if (alreadySaved) {
+                // Just toggle favorited state in Redux
+                dispatch(toggleFavorite(alreadySaved));
+            } else {
+                // Map TMDB fields to our schema
+                const movieToSave = {
+                    title: movie.title,
+                    rating: Math.round(movie.vote_average),
+                    genre: 'International',
+                    description: movie.overview,
+                    posterPath: `${TMDB_IMAGE_BASE}${movie.poster_path}`,
+                    externalId: movie.id.toString(),
+                    source: 'tmdb'
+                };
+
+                const savedMovie = await addMovie(movieToSave);
+                dispatch(addFavorite(savedMovie));
+                alert(`"${movie.title}" added to your collection!`);
+            }
+        } catch (err) {
+            console.error('Failed to save TMDB movie to DB', err);
+            alert('Failed to save movie.');
+        }
     };
 
-    const isFavorite = (movieId) => {
-        return favorites.some((fav) => fav.id === movieId);
+    const isFavorite = (movieTitle) => {
+        return favorites.some((fav) => fav.title === movieTitle);
     };
 
     // Animation Variants
@@ -45,10 +77,10 @@ export default function ApiPage() {
     if (loading) return (
         <div className="page-container">
             <div className="page-header">
-                <h1>External Movie Database</h1>
+                <h1>Explore Trending</h1>
             </div>
             <div className="movies-grid">
-                {[...Array(6)].map((_, i) => <MovieSkeleton key={i} />)}
+                {[...Array(8)].map((_, i) => <MovieSkeleton key={i} />)}
             </div>
         </div>
     );
@@ -65,7 +97,7 @@ export default function ApiPage() {
         </div>
     );
 
-    const movies = moviesData || [];
+    const moviesList = moviesData?.results || [];
 
     return (
         <div className="page-container">
@@ -74,12 +106,12 @@ export default function ApiPage() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
             >
-                <h1>External Movie Database</h1>
+                <h1>Explore Trending & Popular</h1>
                 <button onClick={refetch} className="refetch-btn" title="Refresh movies">
                     🔄 Refresh
                 </button>
             </motion.div>
-            <p className="api-note">Data fetched from Studio Ghibli public API</p>
+            <p className="api-note">Real-time data from The Movie Database (TMDB)</p>
 
             <motion.div
                 className="movies-grid"
@@ -88,29 +120,19 @@ export default function ApiPage() {
                 animate="visible"
             >
                 <AnimatePresence>
-                    {movies.map(movie => {
-                        const favorite = isFavorite(movie.id);
-                        const movieData = {
-                            id: movie.id,
-                            title: movie.title,
-                            rating: Math.round(movie.rt_score / 10),
-                            genre: movie.release_date,
-                            description: movie.description,
-                            source: 'api'
-                        };
-
+                    {moviesList.map(movie => {
                         return (
                             <MovieCard
                                 key={movie.id}
                                 id={movie.id}
                                 title={movie.title}
-                                rating={Math.round(movie.rt_score / 10)}
-                                genre={movie.release_date}
-                                description={movie.description}
-                                image={movie.image}
-                                imdbLink={`https://www.imdb.com/find/?q=${encodeURIComponent(movie.title)}&s=tt`}
-                                onFavoriteToggle={() => handleToggleFavorite(movieData)}
-                                isFavorite={favorite}
+                                rating={Math.round(movie.vote_average)}
+                                genre={movie.release_date?.split('-')[0] || 'Movie'}
+                                description={movie.overview?.substring(0, 150) + '...'}
+                                image={movie.poster_path ? `${TMDB_IMAGE_BASE}${movie.poster_path}` : null}
+                                imdbLink={`https://www.themoviedb.org/movie/${movie.id}`}
+                                onFavoriteToggle={() => handleToggleFavorite(movie)}
+                                isFavorite={isFavorite(movie.title)}
                                 variants={itemVariants}
                             />
                         );

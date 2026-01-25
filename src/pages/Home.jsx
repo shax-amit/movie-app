@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { selectFavorites, removeFavorite, toggleFavorite } from '../store/favoritesSlice';
+import { selectFavorites, removeFavorite, toggleFavorite, addFavorite } from '../store/favoritesSlice';
 import { useApi } from '../hooks/useApi';
 import { useDebounce } from '../hooks/useDebounce';
 import { useMovies } from '../hooks/useMovies';
@@ -10,58 +10,91 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
 export default function Home() {
-    const { movies, loading: moviesLoading, error: moviesError, deleteMovie } = useMovies();
+    const { movies, loading: moviesLoading, error: moviesError, deleteMovie, addMovie } = useMovies();
     const [filter, setFilter] = useState('');
     const debouncedFilter = useDebounce(filter, 500);
     const favorites = useSelector(selectFavorites);
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    // ...
 
-    // Use useApi hook to fetch trending movie recommendations
+    const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY;
+    const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
+    const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w500';
+
+    // Use useApi hook to fetch trending movie recommendations from TMDB
     const { data: trendingData, loading: trendingLoading } = useApi(
-        'https://ghibliapi.vercel.app/films?limit=3'
+        `${TMDB_BASE_URL}/trending/movie/week?api_key=${TMDB_API_KEY}`
     );
 
+    // Use useApi hook to fetch weekly picks (Top Rated) from TMDB
+    const { data: weeklyPicksData, loading: weeklyPicksLoading } = useApi(
+        `${TMDB_BASE_URL}/movie/top_rated?api_key=${TMDB_API_KEY}`
+    );
 
-
-    // Strictly follow user's request for case-insensitive comparison
     const searchQuery = (debouncedFilter || '').toLowerCase();
 
-    // Log to help debugging in the browser console
-    if (searchQuery) {
-        console.log('Debounced search for:', searchQuery);
-    }
-
-    const filteredUserMovies = (movies || []).filter(m => m.source === 'user').filter(movie => {
+    // Movies from our MongoDB (Personal Collection)
+    const filteredUserMovies = (movies || []).filter(movie => {
         const title = (movie.title || '').toLowerCase();
         const genre = (movie.genre || '').toLowerCase();
         return title.includes(searchQuery) || genre.includes(searchQuery);
     });
 
-    const filteredSeedMovies = (movies || []).filter(m => m.source === 'seed').filter(movie => {
+    // Trending from TMDB
+    const filteredTrending = (trendingData?.results || []).slice(0, 4).filter(movie => {
         const title = (movie.title || '').toLowerCase();
-        const genre = (movie.genre || '').toLowerCase();
-        return title.includes(searchQuery) || genre.includes(searchQuery);
+        return title.includes(searchQuery);
     });
 
-    const filteredTrendingData = (trendingData || []).filter(movie => {
+    // Weekly Picks from TMDB
+    const filteredWeeklyPicks = (weeklyPicksData?.results || []).slice(0, 4).filter(movie => {
         const title = (movie.title || '').toLowerCase();
-        const date = (movie.release_date || '').toLowerCase();
-        return title.includes(searchQuery) || date.includes(searchQuery);
+        return title.includes(searchQuery);
     });
 
-    const handleToggleFavorite = (movie) => {
-        dispatch(toggleFavorite(movie));
+    const handleToggleFavorite = async (movie, source) => {
+        // If it's a TMDB movie, we first save it to our MongoDB
+        if (source === 'tmdb') {
+            try {
+                // Check if already in our collection (by externalId)
+                const alreadySaved = movies.find(m => m.externalId === movie.id.toString());
+
+                if (alreadySaved) {
+                    // Just toggle favorited state in Redux
+                    dispatch(toggleFavorite(alreadySaved));
+                } else {
+                    // Map TMDB fields to our schema
+                    const movieToSave = {
+                        title: movie.title,
+                        rating: Math.round(movie.vote_average),
+                        genre: 'International', // TMDB doesn't give names directly without more calls
+                        description: movie.overview,
+                        posterPath: `${TMDB_IMAGE_BASE}${movie.poster_path}`,
+                        externalId: movie.id.toString(),
+                        source: 'tmdb'
+                    };
+
+                    const savedMovie = await addMovie(movieToSave);
+                    dispatch(addFavorite(savedMovie));
+                    alert(`"${movie.title}" added to your collection!`);
+                }
+            } catch (err) {
+                console.error('Failed to save TMDB movie to DB', err);
+                alert('Failed to save movie. Check if it already exists.');
+            }
+        } else {
+            // Regular user/seed movie - just toggle Redux
+            dispatch(toggleFavorite(movie));
+        }
     };
 
-    const isFavoriteMovie = (movieId) => {
-        return favorites.some((fav) => fav.id === movieId);
+    const isFavoriteMovie = (movieId, movieTitle) => {
+        return favorites.some((fav) => fav.id === movieId || fav.title === movieTitle);
     };
 
     const hasAnyResults = filteredUserMovies.length > 0 ||
-        filteredSeedMovies.length > 0 ||
-        filteredTrendingData.length > 0;
+        filteredTrending.length > 0 ||
+        filteredWeeklyPicks.length > 0;
 
     // Animation Variants
     const containerVariants = {
@@ -173,13 +206,14 @@ export default function Home() {
                 </motion.div>
             )}
 
-            {(filteredTrendingData.length > 0 || trendingLoading) && (
+            {(filteredTrending.length > 0 || trendingLoading) && (
                 <section className="section">
                     <div className="section-header">
                         <h2>🔥 Trending Now</h2>
                     </div>
                     {trendingLoading ? (
                         <div className="movies-grid">
+                            <MovieSkeleton />
                             <MovieSkeleton />
                             <MovieSkeleton />
                             <MovieSkeleton />
@@ -192,29 +226,20 @@ export default function Home() {
                             animate="visible"
                         >
                             <AnimatePresence>
-                                {filteredTrendingData.map(movie => {
-                                    const movieData = {
-                                        id: movie.id,
-                                        title: movie.title,
-                                        rating: Math.round(movie.rt_score / 10),
-                                        genre: movie.release_date,
-                                        description: movie.description?.substring(0, 100) + '...',
-                                        source: 'api'
-                                    };
-                                    return (
-                                        <MovieCard
-                                            key={`trend-${movie.id}`}
-                                            id={movie.id}
-                                            title={movie.title}
-                                            rating={Math.round(movie.rt_score / 10)}
-                                            genre={movie.release_date}
-                                            description={movie.description?.substring(0, 100) + '...'}
-                                            onFavoriteToggle={() => handleToggleFavorite(movieData)}
-                                            isFavorite={isFavoriteMovie(movie.id)}
-                                            variants={itemVariants}
-                                        />
-                                    );
-                                })}
+                                {filteredTrending.map(movie => (
+                                    <MovieCard
+                                        key={`trend-${movie.id}`}
+                                        id={movie.id}
+                                        title={movie.title}
+                                        rating={Math.round(movie.vote_average)}
+                                        genre={movie.release_date?.split('-')[0] || 'Movie'}
+                                        description={movie.overview?.substring(0, 100) + '...'}
+                                        image={movie.poster_path ? `${TMDB_IMAGE_BASE}${movie.poster_path}` : null}
+                                        onFavoriteToggle={() => handleToggleFavorite(movie, 'tmdb')}
+                                        isFavorite={isFavoriteMovie(null, movie.title)}
+                                        variants={itemVariants}
+                                    />
+                                ))}
                             </AnimatePresence>
                         </motion.div>
                     )}
@@ -236,12 +261,13 @@ export default function Home() {
                         <AnimatePresence>
                             {filteredUserMovies.map(movie => (
                                 <MovieCard
-                                    key={`user-${movie.id}`}
+                                    key={movie.id}
                                     id={movie.id}
                                     title={movie.title}
                                     rating={movie.rating}
                                     genre={movie.genre}
                                     description={movie.description}
+                                    image={movie.posterPath}
                                     onDelete={async () => {
                                         if (window.confirm(`Are you sure you want to delete "${movie.title}"?`)) {
                                             try {
@@ -252,7 +278,7 @@ export default function Home() {
                                         }
                                     }}
                                     onEdit={() => navigate('/form', { state: { movie } })}
-                                    onFavoriteToggle={() => handleToggleFavorite(movie)}
+                                    onFavoriteToggle={() => handleToggleFavorite(movie, 'user')}
                                     isFavorite={isFavoriteMovie(movie.id)}
                                     trailerId={movie.trailerId}
                                     variants={itemVariants}
@@ -263,35 +289,41 @@ export default function Home() {
                 </section>
             )}
 
-            {filteredSeedMovies.length > 0 && (
+            {(filteredWeeklyPicks.length > 0 || weeklyPicksLoading) && (
                 <section className="section">
                     <div className="section-header">
-                        <h2>Weekly Picks</h2>
+                        <h2>🌟 Weekly Picks</h2>
                     </div>
-
-                    <motion.div
-                        className="movies-grid"
-                        variants={containerVariants}
-                        initial="hidden"
-                        animate="visible"
-                    >
-                        <AnimatePresence mode="popLayout">
-                            {filteredSeedMovies.map(movie => (
-                                <MovieCard
-                                    key={`seed-${movie.id}`}
-                                    id={movie.id}
-                                    title={movie.title}
-                                    rating={movie.rating}
-                                    genre={movie.genre}
-                                    description={movie.description}
-                                    onFavoriteToggle={() => handleToggleFavorite(movie)}
-                                    isFavorite={isFavoriteMovie(movie.id)}
-                                    trailerId={movie.trailerId}
-                                    variants={itemVariants}
-                                />
-                            ))}
-                        </AnimatePresence>
-                    </motion.div>
+                    {weeklyPicksLoading ? (
+                        <div className="movies-grid">
+                            <MovieSkeleton />
+                            <MovieSkeleton />
+                        </div>
+                    ) : (
+                        <motion.div
+                            className="movies-grid"
+                            variants={containerVariants}
+                            initial="hidden"
+                            animate="visible"
+                        >
+                            <AnimatePresence mode="popLayout">
+                                {filteredWeeklyPicks.map(movie => (
+                                    <MovieCard
+                                        key={`weekly-${movie.id}`}
+                                        id={movie.id}
+                                        title={movie.title}
+                                        rating={Math.round(movie.vote_average)}
+                                        genre={movie.release_date?.split('-')[0] || 'Top Rated'}
+                                        description={movie.overview?.substring(0, 100) + '...'}
+                                        image={movie.poster_path ? `${TMDB_IMAGE_BASE}${movie.poster_path}` : null}
+                                        onFavoriteToggle={() => handleToggleFavorite(movie, 'tmdb')}
+                                        isFavorite={isFavoriteMovie(null, movie.title)}
+                                        variants={itemVariants}
+                                    />
+                                ))}
+                            </AnimatePresence>
+                        </motion.div>
+                    )}
                 </section>
             )}
         </div>

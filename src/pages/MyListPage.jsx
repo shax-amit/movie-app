@@ -88,6 +88,7 @@ export default function MyListPage() {
                                 rating={movie.rating}
                                 genre={movie.genre || movie.release_date || 'Favorite'}
                                 description={movie.description}
+                                image={movie.posterPath}
                                 onFavoriteToggle={() => dispatch(toggleFavorite(movie))}
                                 isFavorite={true}
                                 onEdit={movie.source === 'user' ? () => navigate('/form', { state: { movie } }) : null}

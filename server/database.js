@@ -50,11 +50,11 @@ export async function connectDatabase() {
 
   try {
     const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/movie-app';
-    
+
     await mongoose.connect(MONGODB_URI);
     isConnected = true;
     console.log('✅ Connected to MongoDB');
-    
+
     // Seed database if empty
     await seedDatabase();
   } catch (error) {
@@ -69,11 +69,20 @@ export async function connectDatabase() {
 async function seedDatabase() {
   try {
     const count = await Movie.countDocuments();
-    
+
     if (count === 0) {
       console.log('📦 Seeding database with initial movies...');
       await Movie.insertMany(SEED_MOVIES);
       console.log('✅ Database seeded with', SEED_MOVIES.length, 'movies');
+    } else {
+      // Cleanup: Remove explicit null externalId to allow sparse unique index to work
+      const result = await Movie.updateMany(
+        { externalId: null },
+        { $unset: { externalId: "" } }
+      );
+      if (result.modifiedCount > 0) {
+        console.log(`🧹 Cleaned up ${result.modifiedCount} movies with null externalId`);
+      }
     }
   } catch (error) {
     console.error('Error seeding database:', error);

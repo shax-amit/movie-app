@@ -13,6 +13,7 @@ export default function MovieCard({
     onFavoriteToggle,
     isFavorite,
     image,
+    posterPath,
     imdbLink,
     trailerId,
     variants
@@ -75,12 +76,20 @@ export default function MovieCard({
                     <span className="rating">⭐ {rating}/10</span>
                     <span className="genre">{genre}</span>
                 </div>
-                {image && (
+                {(image || posterPath) && (
                     <img
-                        src={image}
+                        src={image || posterPath}
                         alt={`${title} poster`}
-                        className="api-poster"
+                        className="movie-poster"
                         loading="lazy"
+                        style={{
+                            width: '100%',
+                            height: 'auto',
+                            maxHeight: '300px',
+                            objectFit: 'cover',
+                            borderRadius: '8px',
+                            marginBottom: '1rem'
+                        }}
                     />
                 )}
                 {description && <p className="description">{description}</p>}

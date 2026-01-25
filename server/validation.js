@@ -48,8 +48,22 @@ export function validateMovie(movie) {
   if (movie.description !== undefined && movie.description !== null) {
     if (typeof movie.description !== 'string') {
       errors.description = 'Description must be a string';
-    } else if (movie.description.length > 1000) {
-      errors.description = 'Description must be less than 1000 characters';
+    } else if (movie.description.length > 2000) {
+      errors.description = 'Description must be less than 2000 characters';
+    }
+  }
+
+  // ExternalId validation (optional)
+  if (movie.externalId !== undefined && movie.externalId !== null) {
+    if (typeof movie.externalId !== 'string' && typeof movie.externalId !== 'number') {
+      errors.externalId = 'External ID must be a string or number';
+    }
+  }
+
+  // PosterPath validation (optional)
+  if (movie.posterPath !== undefined && movie.posterPath !== null) {
+    if (typeof movie.posterPath !== 'string') {
+      errors.posterPath = 'Poster path must be a string';
     }
   }
 
@@ -113,8 +127,20 @@ export function validateMovieUpdate(movie) {
   if (movie.description !== undefined && movie.description !== null) {
     if (typeof movie.description !== 'string') {
       errors.description = 'Description must be a string';
-    } else if (movie.description.length > 1000) {
-      errors.description = 'Description must be less than 1000 characters';
+    } else if (movie.description.length > 2000) {
+      errors.description = 'Description must be less than 2000 characters';
+    }
+  }
+
+  if (movie.externalId !== undefined && movie.externalId !== null) {
+    if (typeof movie.externalId !== 'string' && typeof movie.externalId !== 'number') {
+      errors.externalId = 'External ID must be a string or number';
+    }
+  }
+
+  if (movie.posterPath !== undefined && movie.posterPath !== null) {
+    if (typeof movie.posterPath !== 'string') {
+      errors.posterPath = 'Poster path must be a string';
     }
   }
 

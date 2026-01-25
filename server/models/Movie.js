@@ -24,8 +24,19 @@ const movieSchema = new mongoose.Schema({
   description: {
     type: String,
     trim: true,
-    maxlength: 1000,
+    maxlength: 2000,
     default: null
+  },
+  posterPath: {
+    type: String,
+    trim: true,
+    maxlength: 500,
+    default: null
+  },
+  externalId: {
+    type: String,
+    unique: true,
+    sparse: true
   },
   trailerId: {
     type: String,
@@ -35,7 +46,7 @@ const movieSchema = new mongoose.Schema({
   },
   source: {
     type: String,
-    enum: ['seed', 'user'],
+    enum: ['seed', 'user', 'tmdb'],
     default: 'user'
   }
 }, {
