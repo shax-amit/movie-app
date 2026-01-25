@@ -62,17 +62,21 @@ router.post('/', async (req, res, next) => {
     }
 
     // Create movie
-    const newMovie = await db.create({
+    const createData = {
       title: movieData.title.trim(),
       rating: movieData.rating,
       genre: movieData.genre.trim(),
       description: movieData.description?.trim() || null,
-      posterPath: movieData.posterPath?.trim() || null,
-      externalId: movieData.externalId?.toString() || null,
-      trailerId: movieData.trailerId?.trim() || null,
-      personalOpinion: movieData.personalOpinion?.trim() || null,
       source: movieData.source || 'user'
-    });
+    };
+
+    if (movieData.posterPath) createData.posterPath = movieData.posterPath;
+    if (movieData.externalId) createData.externalId = movieData.externalId.toString();
+    if (movieData.trailerId) createData.trailerId = movieData.trailerId;
+    if (movieData.personalOpinion) createData.personalOpinion = movieData.personalOpinion;
+    if (movieData.isFavorite !== undefined) createData.isFavorite = movieData.isFavorite;
+
+    const newMovie = await db.create(createData);
 
     res.status(201).json(newMovie);
   } catch (error) {
@@ -126,13 +130,21 @@ router.put('/:id', async (req, res, next) => {
       updateData.posterPath = movieData.posterPath?.trim() || null;
     }
     if (movieData.externalId !== undefined) {
-      updateData.externalId = movieData.externalId?.toString() || null;
+      if (movieData.externalId === null) {
+        // Special case: if we want to remove it
+        updateData.$unset = { externalId: "" };
+      } else {
+        updateData.externalId = movieData.externalId.toString();
+      }
     }
     if (movieData.trailerId !== undefined) {
       updateData.trailerId = movieData.trailerId?.trim() || null;
     }
     if (movieData.personalOpinion !== undefined) {
       updateData.personalOpinion = movieData.personalOpinion?.trim() || null;
+    }
+    if (movieData.isFavorite !== undefined) {
+      updateData.isFavorite = movieData.isFavorite;
     }
 
     if (Object.keys(updateData).length === 0) {

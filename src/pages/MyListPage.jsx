@@ -8,8 +8,8 @@ import { useNavigate } from 'react-router-dom';
 import { updateFavorite } from '../store/favoritesSlice';
 
 export default function MyListPage() {
-    const favorites = useSelector(selectFavorites);
-    const { movies, deleteMovie, updateMovie, loading } = useMovies();
+    const { movies, loading, error, deleteMovie, updateMovie } = useMovies();
+    const favorites = useSelector((state) => state.favorites.items);
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const [search, setSearch] = useState('');
@@ -24,11 +24,13 @@ export default function MyListPage() {
     };
 
     // Bootstrap: Sync MongoDB collection to Redux favorites once loaded
+    // Also ensures Redux stays in sync with DB if movies are deleted elsewhere
     useEffect(() => {
-        if (movies.length > 0 && favorites.length === 0) {
-            dispatch(loadFavorites(movies));
+        if (!loading && movies) {
+            const dbFavorites = movies.filter(m => m.isFavorite);
+            dispatch(loadFavorites(dbFavorites));
         }
-    }, [movies.length, favorites.length, dispatch]);
+    }, [movies, loading, dispatch]);
     // ...
 
     const filteredFavorites = favorites.filter(movie => {
@@ -109,10 +111,13 @@ export default function MyListPage() {
                                 description={movie.description}
                                 image={movie.posterPath}
                                 onFavoriteToggle={async () => {
-                                    if (window.confirm(`Remove "${movie.title}" from your collection?`)) {
+                                    if (window.confirm(`Remove "${movie.title}" from your list?`)) {
                                         try {
-                                            // Since these are all DB movies, we use deleteMovie
-                                            await deleteMovie(movie.id);
+                                            if (movie.source === 'tmdb') {
+                                                await deleteMovie(movie.id);
+                                            } else {
+                                                await updateMovie(movie.id, { isFavorite: false });
+                                            }
                                             dispatch(removeFavorite(movie.id));
                                         } catch (err) {
                                             console.error('Failed to remove from list', err);
@@ -125,6 +130,7 @@ export default function MyListPage() {
                                 personalOpinion={movie.personalOpinion}
                                 trailerId={movie.trailerId}
                                 variants={itemVariants}
+                                source={movie.source}
                             />
                         ))}
                     </AnimatePresence>

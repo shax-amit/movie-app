@@ -54,6 +54,10 @@ const movieSchema = new mongoose.Schema({
     trim: true,
     maxlength: 1000,
     default: null
+  },
+  isFavorite: {
+    type: Boolean,
+    default: true
   }
 }, {
   timestamps: true,

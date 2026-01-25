@@ -18,7 +18,8 @@ export default function MovieCard({
     imdbLink,
     trailerId,
     personalOpinion,
-    variants
+    variants,
+    source
 }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
@@ -30,6 +31,8 @@ export default function MovieCard({
     }, [personalOpinion]);
 
     // Fallback trailer ID if none provided (Interstellar theme / generic cinematic)
+    // Only show if source is NOT 'user'
+    const showTrailer = source !== 'user';
     const effectiveTrailerId = trailerId || 'zSWdZVtXT7E';
 
     return (
@@ -195,13 +198,15 @@ export default function MovieCard({
                     </div>
                 )}
 
-                <button
-                    className="trailer-btn"
-                    onClick={() => setIsModalOpen(true)}
-                >
-                    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
-                    Watch Trailer
-                </button>
+                {showTrailer && (
+                    <button
+                        className="trailer-btn"
+                        onClick={() => setIsModalOpen(true)}
+                    >
+                        <svg fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                        Watch Trailer
+                    </button>
+                )}
 
                 {imdbLink && (
                     <p className="api-link">

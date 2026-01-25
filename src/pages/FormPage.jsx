@@ -64,7 +64,9 @@ export default function FormPage() {
                     title: formData.title,
                     rating: Number(formData.rating),
                     genre: formData.genre,
-                    description: formData.review
+                    description: formData.review,
+                    source: 'user',
+                    isFavorite: false
                 };
 
                 if (isEditMode) {

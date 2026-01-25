@@ -32,46 +32,48 @@ export default function ApiPage() {
     const handleToggleFavorite = async (movie) => {
         const favorited = isFavorite(movie);
 
-        if (favorited) {
-            // UN-FAVORITE: Delete from DB and Redux
-            try {
-                const dbMovie = movies.find(m =>
-                    (m.externalId && movie.id && m.externalId === movie.id.toString()) ||
-                    (m.title === movie.title)
-                );
+        try {
+            const dbMovie = movies.find(m =>
+                (m.externalId && movie.id && m.externalId.toString() === movie.id.toString()) ||
+                (m.id && movie.id && m.id.toString() === movie.id.toString()) ||
+                (m.title === movie.title)
+            );
 
+            if (favorited) {
+                // UN-FAVORITE
                 if (dbMovie) {
-                    await deleteMovie(dbMovie.id);
+                    if (dbMovie.source === 'tmdb') {
+                        await deleteMovie(dbMovie.id);
+                    } else {
+                        await updateMovie(dbMovie.id, { isFavorite: false });
+                    }
                     dispatch(removeFavorite(dbMovie.id));
                 } else {
                     dispatch(removeFavorite({ title: movie.title }));
                 }
-            } catch (err) {
-                console.error('Failed to un-favorite', err);
-            }
-        } else {
-            // FAVORITE: Save directly
-            try {
-                const existingInDb = movies.find(m => m.externalId === (movie.id?.toString()));
-                if (existingInDb) {
-                    dispatch(addFavorite(existingInDb));
-                    return;
+            } else {
+                // FAVORITE
+                if (dbMovie) {
+                    await updateMovie(dbMovie.id, { isFavorite: true });
+                    dispatch(addFavorite({ ...dbMovie, isFavorite: true }));
+                } else {
+                    // TMDB: add to DB
+                    const movieToSave = {
+                        title: movie.title,
+                        rating: Math.round(movie.vote_average),
+                        genre: 'International',
+                        description: movie.overview,
+                        posterPath: `${TMDB_IMAGE_BASE}${movie.poster_path}`,
+                        externalId: movie.id.toString(),
+                        source: 'tmdb',
+                        isFavorite: true
+                    };
+                    const savedMovie = await addMovie(movieToSave);
+                    dispatch(addFavorite(savedMovie));
                 }
-
-                const movieToSave = {
-                    title: movie.title,
-                    rating: Math.round(movie.vote_average),
-                    genre: 'International',
-                    description: movie.overview,
-                    posterPath: `${TMDB_IMAGE_BASE}${movie.poster_path}`,
-                    externalId: movie.id.toString(),
-                    source: 'tmdb'
-                };
-                const savedMovie = await addMovie(movieToSave);
-                dispatch(addFavorite(savedMovie));
-            } catch (err) {
-                console.error('Failed to favorite', err);
             }
+        } catch (err) {
+            console.error('Failed to toggle favorite', err);
         }
     };
 
@@ -100,6 +102,21 @@ export default function ApiPage() {
             (movie.title && fav.title === movie.title)
         );
     };
+
+    const isAddedInCollection = (movie) => {
+        return movies.some((m) =>
+            (m.externalId && movie.id && m.externalId === movie.id.toString()) ||
+            (m.title === movie.title)
+        );
+    };
+
+    // Bootstrap: Sync MongoDB collection to Redux favorites once loaded
+    useEffect(() => {
+        if (movies.length > 0 && favorites.length === 0) {
+            const onlyFavorites = movies.filter(m => m.isFavorite);
+            dispatch(loadFavorites(onlyFavorites));
+        }
+    }, [movies, favorites.length, dispatch]);
 
     // Animation Variants
     const containerVariants = {
@@ -186,6 +203,7 @@ export default function ApiPage() {
                                     (m.title === movie.title)
                                 )?.personalOpinion}
                                 variants={itemVariants}
+                                source="tmdb"
                             />
                         );
                     })}

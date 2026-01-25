@@ -41,6 +41,14 @@ export default function Home() {
         return title.includes(searchQuery);
     });
 
+    // User Added Movies (Explicitly from form)
+    const filteredAddedMovies = (movies || []).filter(movie => {
+        if (movie.source !== 'user') return false;
+        const title = (movie.title || '').toLowerCase();
+        const genre = (movie.genre || '').toLowerCase();
+        return title.includes(searchQuery) || genre.includes(searchQuery);
+    });
+
     // Weekly Picks from TMDB
     const filteredWeeklyPicks = (weeklyPicksData?.results || []).slice(0, 4).filter(movie => {
         const title = (movie.title || '').toLowerCase();
@@ -50,33 +58,35 @@ export default function Home() {
     const handleToggleFavorite = async (movie, source) => {
         const favorited = isFavoriteMovie(movie);
 
-        if (favorited) {
-            // UN-FAVORITE: Delete from DB and Redux
-            try {
-                const dbMovie = movies.find(m =>
-                    (m.externalId && movie.id && m.externalId === movie.id.toString()) ||
-                    (m.title === movie.title)
-                );
+        try {
+            const dbMovie = movies.find(m =>
+                (m.externalId && movie.id && m.externalId.toString() === movie.id.toString()) ||
+                (m.id && movie.id && m.id.toString() === movie.id.toString()) ||
+                (m.title === movie.title)
+            );
 
+            if (favorited) {
+                // UN-FAVORITE
                 if (dbMovie) {
-                    await deleteMovie(dbMovie.id);
+                    if (dbMovie.source === 'tmdb') {
+                        // TMDB: delete entirely if not on My List
+                        await deleteMovie(dbMovie.id);
+                    } else {
+                        // USER ADDED: just toggle the flag
+                        await updateMovie(dbMovie.id, { isFavorite: false });
+                    }
                     dispatch(removeFavorite(dbMovie.id));
                 } else {
                     dispatch(removeFavorite({ title: movie.title }));
                 }
-            } catch (err) {
-                console.error('Failed to un-favorite', err);
-            }
-        } else {
-            // FAVORITE: Save directly
-            try {
-                const existingInDb = movies.find(m => m.externalId === (movie.id?.toString()));
-                if (existingInDb) {
-                    dispatch(addFavorite(existingInDb));
-                    return;
-                }
-
-                if (source === 'tmdb') {
+            } else {
+                // FAVORITE
+                if (dbMovie) {
+                    // Movie is already in DB (e.g. user movie)
+                    await updateMovie(dbMovie.id, { isFavorite: true });
+                    dispatch(addFavorite({ ...dbMovie, isFavorite: true }));
+                } else if (source === 'tmdb') {
+                    // TMDB: add to DB
                     const movieToSave = {
                         title: movie.title,
                         rating: Math.round(movie.vote_average),
@@ -84,16 +94,15 @@ export default function Home() {
                         description: movie.overview,
                         posterPath: `${TMDB_IMAGE_BASE}${movie.poster_path}`,
                         externalId: movie.id.toString(),
-                        source: 'tmdb'
+                        source: 'tmdb',
+                        isFavorite: true
                     };
                     const savedMovie = await addMovie(movieToSave);
                     dispatch(addFavorite(savedMovie));
-                } else {
-                    dispatch(toggleFavorite(movie));
                 }
-            } catch (err) {
-                console.error('Failed to favorite', err);
             }
+        } catch (err) {
+            console.error('Failed to toggle favorite', err);
         }
     };
 
@@ -120,7 +129,8 @@ export default function Home() {
     // Bootstrap: Sync MongoDB collection to Redux favorites once loaded
     useEffect(() => {
         if (movies.length > 0 && favorites.length === 0) {
-            dispatch(loadFavorites(movies));
+            const onlyFavorites = movies.filter(m => m.isFavorite);
+            dispatch(loadFavorites(onlyFavorites));
         }
     }, [movies, favorites.length, dispatch]);
 
@@ -132,7 +142,8 @@ export default function Home() {
     };
 
     const hasAnyResults = filteredTrending.length > 0 ||
-        filteredWeeklyPicks.length > 0;
+        filteredWeeklyPicks.length > 0 ||
+        filteredAddedMovies.length > 0;
 
     // Animation Variants
     const containerVariants = {
@@ -242,6 +253,51 @@ export default function Home() {
                     <h3>No results found for "{filter}"</h3>
                     <p>Try searching for a different title or genre.</p>
                 </motion.div>
+            )}
+
+            {filteredAddedMovies.length > 0 && (
+                <section className="section">
+                    <div className="section-header">
+                        <h2>✍️ Movies You Added</h2>
+                    </div>
+                    <motion.div
+                        className="movies-grid"
+                        variants={containerVariants}
+                        initial="hidden"
+                        animate="visible"
+                    >
+                        <AnimatePresence>
+                            {filteredAddedMovies.map(movie => (
+                                <MovieCard
+                                    key={`added-${movie.id}`}
+                                    id={movie.id}
+                                    title={movie.title}
+                                    rating={movie.rating}
+                                    genre={movie.genre}
+                                    description={movie.description}
+                                    image={movie.posterPath}
+                                    onDelete={async () => {
+                                        if (window.confirm(`Are you sure you want to delete "${movie.title}"?`)) {
+                                            try {
+                                                await deleteMovie(movie.id);
+                                            } catch (err) {
+                                                alert(`Failed to delete movie: ${err.message}`);
+                                            }
+                                        }
+                                    }}
+                                    onEdit={() => navigate('/form', { state: { movie } })}
+                                    onFavoriteToggle={() => handleToggleFavorite(movie, 'user')}
+                                    onUpdateOpinion={(opinion) => handleUpdateOpinion(movie, opinion)}
+                                    isFavorite={isFavoriteMovie(movie)}
+                                    personalOpinion={movie.personalOpinion}
+                                    trailerId={movie.trailerId}
+                                    variants={itemVariants}
+                                    source={movie.source}
+                                />
+                            ))}
+                        </AnimatePresence>
+                    </motion.div>
+                </section>
             )}
 
             {(filteredTrending.length > 0 || trendingLoading) && (
