@@ -34,12 +34,6 @@ export default function Home() {
 
     const searchQuery = (debouncedFilter || '').toLowerCase();
 
-    // Movies from our MongoDB (Personal Collection)
-    const filteredUserMovies = (movies || []).filter(movie => {
-        const title = (movie.title || '').toLowerCase();
-        const genre = (movie.genre || '').toLowerCase();
-        return title.includes(searchQuery) || genre.includes(searchQuery);
-    });
 
     // Trending from TMDB
     const filteredTrending = (trendingData?.results || []).slice(0, 4).filter(movie => {
@@ -137,8 +131,7 @@ export default function Home() {
         );
     };
 
-    const hasAnyResults = filteredUserMovies.length > 0 ||
-        filteredTrending.length > 0 ||
+    const hasAnyResults = filteredTrending.length > 0 ||
         filteredWeeklyPicks.length > 0;
 
     // Animation Variants
@@ -296,50 +289,7 @@ export default function Home() {
                 </section>
             )}
 
-            {filteredUserMovies.length > 0 && (
-                <section className="section" id="my-list">
-                    <div className="section-header">
-                        <h2>My Collection</h2>
-                    </div>
 
-                    <motion.div
-                        className="movies-grid"
-                        variants={containerVariants}
-                        initial="hidden"
-                        animate="visible"
-                    >
-                        <AnimatePresence>
-                            {filteredUserMovies.map(movie => (
-                                <MovieCard
-                                    key={movie.id}
-                                    id={movie.id}
-                                    title={movie.title}
-                                    rating={movie.rating}
-                                    genre={movie.genre}
-                                    description={movie.description}
-                                    image={movie.posterPath}
-                                    onDelete={async () => {
-                                        if (window.confirm(`Are you sure you want to delete "${movie.title}"?`)) {
-                                            try {
-                                                await deleteMovie(movie.id);
-                                            } catch (err) {
-                                                alert(`Failed to delete movie: ${err.message}`);
-                                            }
-                                        }
-                                    }}
-                                    onEdit={() => navigate('/form', { state: { movie } })}
-                                    onFavoriteToggle={() => handleToggleFavorite(movie, 'user')}
-                                    onUpdateOpinion={(opinion) => handleUpdateOpinion(movie, opinion)}
-                                    isFavorite={isFavoriteMovie(movie)}
-                                    personalOpinion={movie.personalOpinion}
-                                    trailerId={movie.trailerId}
-                                    variants={itemVariants}
-                                />
-                            ))}
-                        </AnimatePresence>
-                    </motion.div>
-                </section>
-            )}
 
 
 
