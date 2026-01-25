@@ -9,6 +9,7 @@ import MovieSkeleton from '../components/MovieSkeleton';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { updateFavorite } from '../store/favoritesSlice';
+import { getGenreNames } from '../utils/tmdbGenres';
 
 export default function Home() {
     const { movies, loading: moviesLoading, error: moviesError, deleteMovie, addMovie, updateMovie } = useMovies();
@@ -90,7 +91,7 @@ export default function Home() {
                     const movieToSave = {
                         title: movie.title,
                         rating: Math.round(movie.vote_average),
-                        genre: 'International',
+                        genre: getGenreNames(movie.genre_ids),
                         description: movie.overview,
                         posterPath: `${TMDB_IMAGE_BASE}${movie.poster_path}`,
                         externalId: movie.id.toString(),
@@ -326,7 +327,7 @@ export default function Home() {
                                         id={movie.id}
                                         title={movie.title}
                                         rating={Math.round(movie.vote_average)}
-                                        genre={movie.release_date?.split('-')[0] || 'Movie'}
+                                        genre={getGenreNames(movie.genre_ids)}
                                         description={movie.overview?.substring(0, 100) + '...'}
                                         image={movie.poster_path ? `${TMDB_IMAGE_BASE}${movie.poster_path}` : null}
                                         onFavoriteToggle={() => handleToggleFavorite(movie, 'tmdb')}
@@ -374,7 +375,7 @@ export default function Home() {
                                         id={movie.id}
                                         title={movie.title}
                                         rating={Math.round(movie.vote_average)}
-                                        genre={movie.release_date?.split('-')[0] || 'Top Rated'}
+                                        genre={getGenreNames(movie.genre_ids)}
                                         description={movie.overview?.substring(0, 100) + '...'}
                                         image={movie.poster_path ? `${TMDB_IMAGE_BASE}${movie.poster_path}` : null}
                                         onFavoriteToggle={() => handleToggleFavorite(movie, 'tmdb')}

@@ -6,6 +6,7 @@ import { useMovies } from '../hooks/useMovies';
 import MovieCard from '../components/MovieCard';
 import MovieSkeleton from '../components/MovieSkeleton';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getGenreNames } from '../utils/tmdbGenres';
 import { updateFavorite } from '../store/favoritesSlice';
 
 export default function ApiPage() {
@@ -61,7 +62,7 @@ export default function ApiPage() {
                     const movieToSave = {
                         title: movie.title,
                         rating: Math.round(movie.vote_average),
-                        genre: 'International',
+                        genre: getGenreNames(movie.genre_ids),
                         description: movie.overview,
                         posterPath: `${TMDB_IMAGE_BASE}${movie.poster_path}`,
                         externalId: movie.id.toString(),
@@ -191,7 +192,7 @@ export default function ApiPage() {
                                 id={movie.id}
                                 title={movie.title}
                                 rating={Math.round(movie.vote_average)}
-                                genre={movie.release_date?.split('-')[0] || 'Movie'}
+                                genre={getGenreNames(movie.genre_ids)}
                                 description={movie.overview?.substring(0, 150) + '...'}
                                 image={movie.poster_path ? `${TMDB_IMAGE_BASE}${movie.poster_path}` : null}
                                 imdbLink={`https://www.themoviedb.org/movie/${movie.id}`}
