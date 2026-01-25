@@ -130,6 +130,7 @@ export default function MyListPage() {
                                 personalOpinion={movie.personalOpinion}
                                 trailerId={movie.trailerId}
                                 tmdbId={movie.externalId}
+                                year={movie.year}
                                 variants={itemVariants}
                                 source={movie.source}
                             />

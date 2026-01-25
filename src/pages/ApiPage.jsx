@@ -86,7 +86,8 @@ export default function ApiPage() {
                         posterPath: `${TMDB_IMAGE_BASE}${movie.poster_path}`,
                         externalId: movie.id.toString(),
                         source: 'tmdb',
-                        isFavorite: true
+                        isFavorite: true,
+                        year: movie.release_date?.split('-')[0]
                     };
                     const savedMovie = await addMovie(movieToSave);
                     dispatch(addFavorite(savedMovie));
@@ -246,6 +247,7 @@ export default function ApiPage() {
                                     (m.title === movie.title)
                                 )?.personalOpinion}
                                 tmdbId={movie.id}
+                                year={movie.release_date?.split('-')[0]}
                                 variants={itemVariants}
                                 source="tmdb"
                             />

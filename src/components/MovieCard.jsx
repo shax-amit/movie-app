@@ -20,7 +20,8 @@ export default function MovieCard({
     personalOpinion,
     variants,
     source,
-    tmdbId: initialTmdbId
+    tmdbId: initialTmdbId,
+    year
 }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
@@ -121,6 +122,7 @@ export default function MovieCard({
                 </div>
                 <div className="movie-info">
                     <span className="rating">⭐ {rating}/10</span>
+                    {year && <span className="movie-year">{year}</span>}
                     <span className="genre">{genre}</span>
                 </div>
                 {(image || posterPath) && (

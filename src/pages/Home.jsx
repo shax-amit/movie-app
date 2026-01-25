@@ -82,7 +82,8 @@ export default function Home() {
                         posterPath: `${TMDB_IMAGE_BASE}${movie.poster_path}`,
                         externalId: movie.id.toString(),
                         source: 'tmdb',
-                        isFavorite: true
+                        isFavorite: true,
+                        year: movie.release_date?.split('-')[0]
                     };
                     const savedMovie = await addMovie(movieToSave);
                     dispatch(addFavorite(savedMovie));
@@ -241,6 +242,7 @@ export default function Home() {
                                     isFavorite={isFavoriteMovie(movie)}
                                     personalOpinion={movie.personalOpinion}
                                     trailerId={movie.trailerId}
+                                    year={movie.year}
                                     variants={itemVariants}
                                     source={movie.source}
                                 />
@@ -280,6 +282,7 @@ export default function Home() {
                                         onUpdateOpinion={(opinion) => handleUpdateOpinion(movie, opinion)}
                                         isFavorite={isFavoriteMovie(movie)}
                                         tmdbId={movie.id}
+                                        year={movie.release_date?.split('-')[0]}
                                         personalOpinion={movies.find(m =>
                                             (m.externalId && movie.id && m.externalId === movie.id.toString()) ||
                                             (m.title === movie.title)
@@ -327,6 +330,7 @@ export default function Home() {
                                         onUpdateOpinion={(opinion) => handleUpdateOpinion(movie, opinion)}
                                         isFavorite={isFavoriteMovie(movie)}
                                         tmdbId={movie.id}
+                                        year={movie.release_date?.split('-')[0]}
                                         personalOpinion={movies.find(m =>
                                             (m.externalId && movie.id && m.externalId === movie.id.toString()) ||
                                             (m.title === movie.title)
