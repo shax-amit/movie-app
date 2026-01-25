@@ -1,14 +1,13 @@
-import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectFavoritesCount, clearFavorites } from '../store/favoritesSlice';
-import { useLocalStorage } from '../hooks/useLocalStorage';
 import { logout } from '../store/authSlice';
+import { useTheme } from '../context/ThemeContext';
 
 export default function Navbar() {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   const favoritesCount = useSelector(selectFavoritesCount);
-  const [theme, setTheme] = useLocalStorage('theme', 'light');
+  const { theme, toggleTheme } = useTheme();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -17,17 +16,6 @@ export default function Navbar() {
     dispatch(clearFavorites());
     navigate('/login');
   };
-
-  const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    document.documentElement.setAttribute('data-theme', newTheme);
-  };
-
-  // Apply theme on mount
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
 
   return (
     <nav className="navbar">

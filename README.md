@@ -6,42 +6,29 @@ This is a React application for managing and viewing movies, created as part of 
 
 The application uses React Router for navigation between pages. All routes are defined in `src/App.jsx`:
 
-- **`/`** → Home Page - Displays user's movie list and favorites
-- **`/form`** → Form Page - Add new movies/reviews
-- **`/api`** → API Page - Browse movies from Studio Ghibli API
-- **`/*`** (any other path) → 404 Not Found Page - Shows error message for unknown routes
+- **`/`** → Home Page - Displays movie collections and trending movies.
+- **`/form`** → Add Movie Page - Add new movies to your collection.
+- **`/api`** → Explore Page - Browse and search for movies from the TMDB API.
+- **`/my-list`** → My List Page - Displays your favorited movies (Require Login).
+- **`/login` / `/signup`** → Authentication pages.
+- **`/*`** (any other path) → 404 Not Found Page - Shows a themed error message for unknown routes.
 
-Navigation is handled through the `Navbar` component using React Router's `<Link>` components, which update the URL without page reload.
+Navigation is handled through the `Navbar` component using React Router's `<Link>` and `<NavLink>` components.
 
-## Global State (Redux Toolkit)
+## Global State
 
-The application uses **Redux Toolkit** to manage favorite movies and global application state.
+The application uses a combination of **Redux Toolkit** and the **React Context API** for state management.
 
-### Store Details
+### React Context API (HW2 Requirement)
 
-- **File:** `src/store/store.js`
-- **Slices:** `favoritesSlice.js`
-- **What it stores:** An array of favorite movie objects and a `lastUpdated` timestamp.
-- **Persistence:** Favorites are manually persisted in `localStorage` (key: `movie-favorites`) and rehydrated on app mount in `App.jsx`.
+- **ThemeContext:** Located in `src/context/ThemeContext.jsx`. It manages the application's visual theme (Light/Dark mode) and persists the choice in `localStorage`.
+- **Usage:** Used in `Navbar.jsx` (to toggle) and `ThemeContext.jsx` itself (to apply the theme to the document root).
 
-### Favorites API (Redux Actions)
+### Redux Toolkit (Advanced State)
 
-The store provides the following actions:
-
-- `addFavorite(movie)` - Add a movie to favorites.
-- `removeFavorite(movieId)` - Remove a movie from favorites.
-- `toggleFavorite(movie)` - Toggle favorite status (add/remove).
-- `clearFavorites()` - Clear all favorites.
-- `loadFavorites(items)` - Load favorites from storage.
-
-### Usage in Components
-
-1. **Home Page & API Page:**
-   - Use `useSelector` to read favorites and `useDispatch` to toggle them.
-   - Shows heart icon (❤️/🤍) for visual feedback.
-
-2. **Navbar:**
-   - Displays favorites count badge dynamically.
+- **Favorites Slice:** Manages the user's favorite movies list.
+- **Auth Slice:** Manages user authentication state and session.
+- **Persistence:** Favorites and auth tokens are persisted in `localStorage`.
 
 ## Project Structure & Pages
 

@@ -75,6 +75,9 @@ export default function FormPage() {
                     await addMovie(movieData);
                 }
 
+                // Strictly follow HW1 requirements: log data on submit
+                console.log('Form submitted successfully:', movieData);
+
                 // Reset form on success
                 setFormData({
                     title: '',

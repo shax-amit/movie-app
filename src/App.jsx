@@ -13,6 +13,7 @@ import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute';
 import { setUser } from './store/authSlice';
 import { API_BASE_URL } from './config';
+import { ThemeProvider } from './context/ThemeContext';
 
 function App() {
   const dispatch = useDispatch();
@@ -74,34 +75,36 @@ function App() {
   }, [isAuthenticated, user, authLoading, dispatch]);
 
   return (
-    <Router>
-      <div className="app">
-        <Navbar />
-        <main className="main-content">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/signup" element={<SignupPage />} />
+    <ThemeProvider>
+      <Router>
+        <div className="app">
+          <Navbar />
+          <main className="main-content">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/signup" element={<SignupPage />} />
 
-            <Route path="/form" element={
-              <ProtectedRoute>
-                <FormPage />
-              </ProtectedRoute>
-            } />
+              <Route path="/form" element={
+                <ProtectedRoute>
+                  <FormPage />
+                </ProtectedRoute>
+              } />
 
-            <Route path="/api" element={<ApiPage />} />
+              <Route path="/api" element={<ApiPage />} />
 
-            <Route path="/my-list" element={
-              <ProtectedRoute>
-                <MyListPage />
-              </ProtectedRoute>
-            } />
+              <Route path="/my-list" element={
+                <ProtectedRoute>
+                  <MyListPage />
+                </ProtectedRoute>
+              } />
 
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </main>
-      </div>
-    </Router>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </main>
+        </div>
+      </Router>
+    </ThemeProvider>
   );
 }
 
