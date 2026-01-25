@@ -1,0 +1,5 @@
+node_modules/
+movies.db
+movies.json
+.env
+*.log
