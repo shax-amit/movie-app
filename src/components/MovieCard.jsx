@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import TrailerModal from './TrailerModal';
 import MovieDetailsModal from './MovieDetailsModal';
+import { TMDB_API_KEY, TMDB_BASE_URL } from '../config';
 
 export default function MovieCard({
     id,
@@ -31,8 +32,6 @@ export default function MovieCard({
     const [fetchedTrailerId, setFetchedTrailerId] = useState(trailerId || '');
     const [hasTrailer, setHasTrailer] = useState(!!trailerId);
 
-    const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY;
-    const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 
     // Fetch trailer if it's a TMDB movie and we don't have a trailerId yet
     useEffect(() => {
