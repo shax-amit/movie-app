@@ -12,6 +12,7 @@ import SignupPage from './pages/SignupPage';
 import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute';
 import { setUser } from './store/authSlice';
+import { API_BASE_URL } from './config';
 
 function App() {
   const dispatch = useDispatch();
@@ -21,7 +22,7 @@ function App() {
   // Load session on mount
   useEffect(() => {
     const restoreSession = async () => {
-      const token = localStorage.getItem('token'); import { API_BASE_URL } from './config';
+      const token = localStorage.getItem('token');
       if (token && !user) {
         try {
           console.log('App Auth Check - API URL:', `${API_BASE_URL}/auth/me`);

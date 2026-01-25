@@ -36,10 +36,10 @@ export default function LoginPage() {
                 dispatch(authSuccess(data));
                 navigate('/');
             } else {
-                dispatch(authFail(data.error || 'Login failed'));
+                dispatch(authFailure(data.error || 'Login failed'));
             }
         } catch (err) {
-            dispatch(authFail('Server error. Please try again later.'));
+            dispatch(authFailure('Server error. Please try again later.'));
         }
     };
 
