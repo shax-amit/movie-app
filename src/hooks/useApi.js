@@ -17,15 +17,31 @@ export function useApi(url, options = {}, dependencies = []) {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(url, {
+      const fetchOptions = {
         ...options,
         headers: {
           'Content-Type': 'application/json',
           ...options.headers,
         },
-      });
+      };
+
+      // Check if URL is valid or if it contains 'undefined' (common TMDB issue)
+      if (!url || url.includes('api_key=undefined')) {
+        console.warn('API call skipped: URL is invalid or TMDB key is missing.');
+        setLoading(false);
+        return;
+      }
+
+      console.log('useApi fetching:', url);
+      const response = await fetch(url, fetchOptions);
 
       if (!response.ok) {
+        if (response.status === 401) {
+          console.warn('API 401: Unauthorized. This is expected for some routes if not logged in.');
+          setData(null);
+          setLoading(false);
+          return;
+        }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 

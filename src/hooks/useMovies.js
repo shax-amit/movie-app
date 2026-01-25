@@ -38,9 +38,15 @@ export function useMovies() {
       console.log('Received movies:', data.length, 'movies');
       setMovies(data);
     } catch (err) {
-      const errorMessage = err.message || 'Failed to fetch movies';
-      setError(errorMessage);
-      console.error('Error fetching movies:', err);
+      if (err.message.includes('401')) {
+        console.warn('Silent auth failure in useMovies (expected for guests)');
+        setMovies([]);
+        setError(null);
+      } else {
+        const errorMessage = err.message || 'Failed to fetch movies';
+        setError(errorMessage);
+        console.error('Error fetching movies:', err);
+      }
     } finally {
       setLoading(false);
     }
