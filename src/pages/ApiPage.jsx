@@ -202,6 +202,7 @@ export default function ApiPage() {
                                     (m.externalId && movie.id && m.externalId === movie.id.toString()) ||
                                     (m.title === movie.title)
                                 )?.personalOpinion}
+                                tmdbId={movie.id}
                                 variants={itemVariants}
                                 source="tmdb"
                             />

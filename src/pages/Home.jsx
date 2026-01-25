@@ -332,6 +332,7 @@ export default function Home() {
                                         onFavoriteToggle={() => handleToggleFavorite(movie, 'tmdb')}
                                         onUpdateOpinion={(opinion) => handleUpdateOpinion(movie, opinion)}
                                         isFavorite={isFavoriteMovie(movie)}
+                                        tmdbId={movie.id}
                                         personalOpinion={movies.find(m =>
                                             (m.externalId && movie.id && m.externalId === movie.id.toString()) ||
                                             (m.title === movie.title)
@@ -379,6 +380,7 @@ export default function Home() {
                                         onFavoriteToggle={() => handleToggleFavorite(movie, 'tmdb')}
                                         onUpdateOpinion={(opinion) => handleUpdateOpinion(movie, opinion)}
                                         isFavorite={isFavoriteMovie(movie)}
+                                        tmdbId={movie.id}
                                         personalOpinion={movies.find(m =>
                                             (m.externalId && movie.id && m.externalId === movie.id.toString()) ||
                                             (m.title === movie.title)

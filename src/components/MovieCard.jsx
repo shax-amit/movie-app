@@ -19,21 +19,56 @@ export default function MovieCard({
     trailerId,
     personalOpinion,
     variants,
-    source
+    source,
+    tmdbId: initialTmdbId
 }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [currentOpinion, setCurrentOpinion] = useState(personalOpinion || '');
+    const [fetchedTrailerId, setFetchedTrailerId] = useState(trailerId || '');
+    const [hasTrailer, setHasTrailer] = useState(!!trailerId);
+
+    const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY;
+    const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
+
+    // Fetch trailer if it's a TMDB movie and we don't have a trailerId yet
+    useEffect(() => {
+        const fetchTrailer = async () => {
+            const idToUse = initialTmdbId || (source === 'tmdb' ? id : null);
+            if (!idToUse || source === 'user' || fetchedTrailerId) return;
+
+            try {
+                const response = await fetch(
+                    `${TMDB_BASE_URL}/movie/${idToUse}/videos?api_key=${TMDB_API_KEY}`
+                );
+                const data = await response.json();
+                const trailer = data.results?.find(
+                    video => video.site === 'YouTube' && (video.type === 'Trailer' || video.type === 'Teaser')
+                );
+
+                if (trailer) {
+                    setFetchedTrailerId(trailer.key);
+                    setHasTrailer(true);
+                } else {
+                    setHasTrailer(false);
+                }
+            } catch (err) {
+                console.error('Error fetching trailer:', err);
+                setHasTrailer(false);
+            }
+        };
+
+        fetchTrailer();
+    }, [id, initialTmdbId, source, TMDB_API_KEY, fetchedTrailerId]);
 
     // Sync state when prop changes
     useEffect(() => {
         setCurrentOpinion(personalOpinion || '');
     }, [personalOpinion]);
 
-    // Fallback trailer ID if none provided (Interstellar theme / generic cinematic)
-    // Only show if source is NOT 'user'
-    const showTrailer = source !== 'user';
-    const effectiveTrailerId = trailerId || 'zSWdZVtXT7E';
+    // Only show if source is NOT 'user' and we have a trailer
+    const showTrailer = source !== 'user' && hasTrailer;
+    const effectiveTrailerId = fetchedTrailerId;
 
     return (
         <>

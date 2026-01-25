@@ -688,26 +688,30 @@ body {
 }
 
 .trailer-btn {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
   color: white;
-  border: 1px solid var(--glass-border);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 12px;
   padding: 0.75rem 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   margin-top: 1rem;
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.6rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 .trailer-btn:hover {
-  background: white;
-  color: black;
-  transform: translateY(-2px);
+  background: #e50914;
+  /* Netflix red for a "Watch" action feel */
+  border-color: #e50914;
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(229, 9, 20, 0.4);
 }
 
 .trailer-btn svg {

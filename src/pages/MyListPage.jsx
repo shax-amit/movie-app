@@ -129,6 +129,7 @@ export default function MyListPage() {
                                 onUpdateOpinion={(opinion) => handleUpdateOpinion(movie, opinion)}
                                 personalOpinion={movie.personalOpinion}
                                 trailerId={movie.trailerId}
+                                tmdbId={movie.externalId}
                                 variants={itemVariants}
                                 source={movie.source}
                             />
