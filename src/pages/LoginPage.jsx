@@ -1,23 +1,30 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
-import { authStart, authSuccess, authFail } from '../store/authSlice';
+import { authStart, authSuccess, authFailure } from '../store/authSlice';
+import { API_BASE_URL } from '../config';
 import { motion } from 'framer-motion';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const { loading, error } = useSelector((state) => state.auth);
+    const { loading, error, isAuthenticated } = useSelector((state) => state.auth);
     const dispatch = useDispatch();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            navigate('/');
+        }
+    }, [isAuthenticated, navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         dispatch(authStart());
 
         try {
-            const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-            const response = await fetch(`${apiBase}/auth/login`, {
+            console.log('Login Attempt - API URL:', `${API_BASE_URL}/auth/login`);
+            const response = await fetch(`${API_BASE_URL}/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password }),

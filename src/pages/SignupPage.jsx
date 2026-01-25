@@ -1,30 +1,30 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
-import { authStart, authSuccess, authFail } from '../store/authSlice';
+import { authStart, authSuccess, authFailure } from '../store/authSlice';
+import { API_BASE_URL } from '../config';
 import { motion } from 'framer-motion';
 
 export default function SignupPage() {
-    const [username, setUserName] = useState('');
+    const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const { loading, error } = useSelector((state) => state.auth);
+    const { loading, error, isAuthenticated } = useSelector((state) => state.auth);
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
+    useEffect(() => {
+        if (isAuthenticated) {
+            navigate('/');
+        }
+    }, [isAuthenticated, navigate]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-        if (password !== confirmPassword) {
-            return dispatch(authFail('Passwords do not match'));
-        }
-
         dispatch(authStart());
 
         try {
-            const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-            const response = await fetch(`${apiBase}/auth/register`, {
+            const response = await fetch(`${API_BASE_URL}/auth/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, email, password }),

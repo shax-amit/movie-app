@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
+import { API_BASE_URL } from '../config';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL_LOCAL = API_BASE_URL; // Using centralized config
 
 /**
  * Custom hook for managing movies with CRUD operations
@@ -19,8 +20,8 @@ export function useMovies() {
       const token = localStorage.getItem('token');
       const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
 
-      console.log('Fetching movies from:', `${API_BASE_URL}/movies`);
-      const response = await fetch(`${API_BASE_URL}/movies`, { headers });
+      console.log('Fetching movies from:', `${API_BASE_URL_LOCAL}/movies`);
+      const response = await fetch(`${API_BASE_URL_LOCAL}/movies`, { headers });
 
       console.log('Response status:', response.status, response.statusText);
 
@@ -54,7 +55,7 @@ export function useMovies() {
       setError(null);
       const token = localStorage.getItem('token');
 
-      const response = await fetch(`${API_BASE_URL}/movies`, {
+      const response = await fetch(`${API_BASE_URL_LOCAL}/movies`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -82,7 +83,7 @@ export function useMovies() {
       setError(null);
       const token = localStorage.getItem('token');
 
-      const response = await fetch(`${API_BASE_URL}/movies/${id}`, {
+      const response = await fetch(`${API_BASE_URL_LOCAL}/movies/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -112,7 +113,7 @@ export function useMovies() {
       setError(null);
       const token = localStorage.getItem('token');
 
-      const response = await fetch(`${API_BASE_URL}/movies/${id}`, {
+      const response = await fetch(`${API_BASE_URL_LOCAL}/movies/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

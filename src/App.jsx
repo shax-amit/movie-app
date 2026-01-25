@@ -21,16 +21,11 @@ function App() {
   // Load session on mount
   useEffect(() => {
     const restoreSession = async () => {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('token'); import { API_BASE_URL } from './config';
       if (token && !user) {
         try {
-          const apiBase = import.meta.env.VITE_API_URL;
-          if (!apiBase) {
-            console.error('VITE_API_URL is not defined. Please set it in your .env file.');
-            return;
-          }
-          console.log('App Auth Check - API URL:', apiBase);
-          const response = await fetch(`${apiBase}/auth/me`, {
+          console.log('App Auth Check - API URL:', `${API_BASE_URL}/auth/me`);
+          const response = await fetch(`${API_BASE_URL}/auth/me`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
           if (response.ok) {
