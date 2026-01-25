@@ -50,9 +50,9 @@ The application consists of 4 main pages:
       - Displays error messages for invalid inputs.
       - Logs data to the console on successful submission.
 
-3.  **API Page (External Data)**
+3.  **Explore Page (External Data)**
     - **File:** `src/pages/ApiPage.jsx`
-    - **Description:** Fetches and displays movie data from the Studio Ghibli public API.
+    - **Description:** Fetches and displays real-time movie data from **The Movie Database (TMDB) API**.
     - **Features:**
       - Handles Loading and Error states.
       - Renders fetched data in a grid layout.

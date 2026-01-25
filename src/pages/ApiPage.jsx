@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { toggleFavorite, addFavorite, loadFavorites, removeFavorite } from '../store/favoritesSlice';
 import { useEffect, useMemo, useState } from 'react';
 import { useApi } from '../hooks/useApi';
+import { useDebounce } from '../hooks/useDebounce';
 import { useMovies } from '../hooks/useMovies';
 import MovieCard from '../components/MovieCard';
 import MovieSkeleton from '../components/MovieSkeleton';
@@ -19,6 +20,13 @@ export default function ApiPage() {
     const { movies, addMovie, deleteMovie, updateMovie } = useMovies();
 
     const [searchQuery, setSearchQuery] = useState('');
+    const debouncedSearchQuery = useDebounce(searchQuery, 500);
+
+    // Synchronize activeQuery with debounced search query
+    useEffect(() => {
+        setActiveQuery(debouncedSearchQuery);
+    }, [debouncedSearchQuery]);
+
     const [activeQuery, setActiveQuery] = useState('');
 
 
@@ -35,7 +43,7 @@ export default function ApiPage() {
 
     const handleSearchSubmit = (e) => {
         e.preventDefault();
-        setActiveQuery(searchQuery);
+        // activeQuery is handled by debouncedSearchQuery effect
     };
 
     const handleClearSearch = () => {
@@ -236,31 +244,39 @@ export default function ApiPage() {
                 animate="visible"
             >
                 <AnimatePresence>
-                    {moviesList.map(movie => {
-                        return (
-                            <MovieCard
-                                key={movie.id}
-                                id={movie.id}
-                                title={movie.title}
-                                rating={Math.round(movie.vote_average)}
-                                genre={getGenreNames(movie.genre_ids)}
-                                description={movie.overview}
-                                image={movie.poster_path ? `${TMDB_IMAGE_BASE}${movie.poster_path}` : null}
-                                imdbLink={`https://www.themoviedb.org/movie/${movie.id}`}
-                                onFavoriteToggle={() => handleToggleFavorite(movie)}
-                                onUpdateOpinion={(opinion) => handleUpdateOpinion(movie, opinion)}
-                                isFavorite={isFavorite(movie)}
-                                personalOpinion={movies.find(m =>
-                                    (m.externalId && movie.id && m.externalId === movie.id.toString()) ||
-                                    (m.title === movie.title)
-                                )?.personalOpinion}
-                                tmdbId={movie.id}
-                                year={movie.release_date?.split('-')[0]}
-                                variants={itemVariants}
-                                source="tmdb"
-                            />
-                        );
-                    })}
+                    {moviesList.length > 0 ? (
+                        moviesList.map(movie => {
+                            return (
+                                <MovieCard
+                                    key={movie.id}
+                                    id={movie.id}
+                                    title={movie.title}
+                                    rating={Math.round(movie.vote_average)}
+                                    genre={getGenreNames(movie.genre_ids)}
+                                    description={movie.overview}
+                                    image={movie.poster_path ? `${TMDB_IMAGE_BASE}${movie.poster_path}` : null}
+                                    imdbLink={`https://www.themoviedb.org/movie/${movie.id}`}
+                                    onFavoriteToggle={() => handleToggleFavorite(movie)}
+                                    onUpdateOpinion={(opinion) => handleUpdateOpinion(movie, opinion)}
+                                    isFavorite={isFavorite(movie)}
+                                    personalOpinion={movies.find(m =>
+                                        (m.externalId && movie.id && m.externalId === movie.id.toString()) ||
+                                        (m.title === movie.title)
+                                    )?.personalOpinion}
+                                    tmdbId={movie.id}
+                                    year={movie.release_date?.split('-')[0]}
+                                    variants={itemVariants}
+                                    source="tmdb"
+                                />
+                            );
+                        })
+                    ) : (
+                        <div className="empty-state" style={{ padding: '4rem 2rem', textAlign: 'center', gridColumn: '1/ -1', color: 'var(--muted)' }}>
+                            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔍</div>
+                            <h3>No Results Found</h3>
+                            <p>We couldn't find any movies matching "{activeQuery || searchQuery}"</p>
+                        </div>
+                    )}
                 </AnimatePresence>
             </motion.div>
         </div>

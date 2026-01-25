@@ -349,6 +349,19 @@ export default function Home() {
                     )}
                 </section>
             )}
+
+            {!hasAnyResults && !moviesLoading && !trendingLoading && !weeklyPicksLoading && (
+                <div className="empty-state-container" style={{ textAlign: 'center', padding: '5rem 2rem' }}>
+                    <div style={{ fontSize: '4rem', marginBottom: '1.5rem' }}>🎬</div>
+                    <h2>Your Movie Universe is Waiting</h2>
+                    <p style={{ color: 'var(--muted)', maxWidth: '500px', margin: '0 auto 2rem' }}>
+                        Start by adding your own movies or exploring trending titles from TMDB.
+                    </p>
+                    <button onClick={() => navigate('/api')} className="submit-btn" style={{ padding: '0.8rem 2rem' }}>
+                        Explore Movies
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

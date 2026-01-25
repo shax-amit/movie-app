@@ -1,33 +1,24 @@
-# Plan: HW2 Compliance Fixes
+# Final Project: Polish & Grade Maximization Plan
 
-The project currently uses Redux for state management, which is great but leaves the specific "Context API" requirement from HW2 unfulfilled in the active codebase. Additionally, the README is outdated.
+The project is already in great shape. To ensure a "100" grade, I will perform a final polish to hit all the "Strong Signal" and "Bonus" requirements mentioned by the professor.
 
 ## Proposed Changes
 
-### [NEW] [ThemeContext.jsx](file:///c:/Users/user/Desktop/לימודים/שנה ג סמסטר א/שיטות מארג/HW1/src/context/ThemeContext.jsx)
-Create a new `ThemeContext` to manage the application's light/dark mode globally.
-- Store `theme` state ('light' or 'dark').
-- Provide a `toggleTheme` function.
-- Persist selection in `localStorage`.
+### [MODIFY] [Home.jsx](file:///c:/Users/user/Desktop/לימודים/שנה ג סמסטר א/שיטות מארג/HW1/src/pages/Home.jsx)
+- **Empty State:** Add a "No movies found" message if all sections (User Movies, Trending, Weekly) are empty.
+- **Loading UX:** Ensure consistent loading skeletons across all sections.
 
-### [MODIFY] [App.jsx](file:///c:/Users/user/Desktop/לימודים/שנה ג סמסטר א/שיטות מארג/HW1/src/App.jsx)
-- Wrap the main application components with `ThemeProvider`.
-
-### [MODIFY] [Navbar.jsx](file:///c:/Users/user/Desktop/לימודים/שנה ג סמסטר א/שיטות מארג/HW1/src/components/Navbar.jsx)
-- Switch from local `useLocalStorage` for theme to using the global `ThemeContext` via `useTheme` hook.
+### [MODIFY] [ApiPage.jsx](file:///c:/Users/user/Desktop/לימודים/שנה ג סמסטר א/שיטות מארג/HW1/src/pages/ApiPage.jsx)
+- **useDebounce:** Integrate the `useDebounce` hook for the search input. This allows results to update automatically as the user types (with a delay), which the professor highlighted as a high-quality pattern.
+- **Empty State:** Add a clear message when no movies match the search query.
 
 ### [MODIFY] [README.md](file:///c:/Users/user/Desktop/לימודים/שנה ג סמסטר א/שיטות מארג/HW1/README.md)
-- Update the **Routing** section to accurately describe the pages and APIs (TMDB instead of Ghibli).
-- Update the **Global State** section to correctly explain the use of `ThemeContext`.
+- **Content Accuracy:** Change "Studio Ghibli API" reference to "TMDB API".
+- **Documentation:** Ensure all installation and environment variable steps are up to date for the professor.
 
 ## Verification Plan
 
-### Automated Tests
-- None (Visual verification required)
-
 ### Manual Verification
-1. Open the app and navigate through all routes (`/`, `/form`, `/api`, `/my-list`).
-2. Verify that entering a garbage URL (e.g., `/test404`) triggers the **404 Page**.
-3. Toggle the **Theme Switcher** in the Navbar.
-4. Verify the theme changes and persists after a page refresh.
-5. Check if `localStorage` key `theme` is updated.
+1. **Search Polish:** Type in the API page search bar and verify results update automatically after 500ms.
+2. **Empty States:** Clear your list and search for a nonsense string to verify the "No results found" UI appears.
+3. **Documentation:** Verify all instructions in README work.
