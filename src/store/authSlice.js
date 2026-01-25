@@ -25,7 +25,7 @@ const authSlice = createSlice({
             state.error = null;
             if (token) localStorage.setItem('token', token);
         },
-        authFail: (state, action) => {
+        authFailure: (state, action) => {
             state.loading = false;
             state.error = action.payload;
             state.isAuthenticated = false;
@@ -48,6 +48,6 @@ const authSlice = createSlice({
     },
 });
 
-export const { authStart, authSuccess, authFail, logout, setUser } = authSlice.actions;
+export const { authStart, authSuccess, authFailure, logout, setUser } = authSlice.actions;
 
 export default authSlice.reducer;

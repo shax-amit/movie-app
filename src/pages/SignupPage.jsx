@@ -9,6 +9,7 @@ export default function SignupPage() {
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const { loading, error, isAuthenticated } = useSelector((state) => state.auth);
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -36,10 +37,10 @@ export default function SignupPage() {
                 dispatch(authSuccess(data));
                 navigate('/');
             } else {
-                dispatch(authFail(data.error || 'Registration failed'));
+                dispatch(authFailure(data.error || 'Registration failed'));
             }
         } catch (err) {
-            dispatch(authFail('Server error. Please try again later.'));
+            dispatch(authFailure('Server error. Please try again later.'));
         }
     };
 
@@ -65,7 +66,7 @@ export default function SignupPage() {
                             type="text"
                             placeholder="Pick a username"
                             value={username}
-                            onChange={(e) => setUserName(e.target.value)}
+                            onChange={(e) => setUsername(e.target.value)}
                             required
                         />
                     </div>
