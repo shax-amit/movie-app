@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { toggleFavorite, addFavorite, loadFavorites, removeFavorite } from '../store/favoritesSlice';
 import { useEffect, useMemo, useState } from 'react';
@@ -11,7 +12,9 @@ import { updateFavorite } from '../store/favoritesSlice';
 
 export default function ApiPage() {
     const dispatch = useDispatch();
+    const { isAuthenticated } = useSelector((state) => state.auth);
     const favorites = useSelector((state) => state.favorites.items);
+    const navigate = useNavigate();
     const { movies, addMovie, deleteMovie, updateMovie } = useMovies();
 
     const [searchQuery, setSearchQuery] = useState('');
@@ -44,12 +47,17 @@ export default function ApiPage() {
 
     // Bootstrap: Load favorites from collection on load
     useEffect(() => {
-        if (movies.length > 0 && favorites.length === 0) {
+        if (isAuthenticated && movies.length > 0 && favorites.length === 0) {
             dispatch(loadFavorites(movies));
         }
-    }, [movies, favorites.length, dispatch]);
+    }, [movies, favorites.length, dispatch, isAuthenticated]);
 
     const handleToggleFavorite = async (movie) => {
+        if (!isAuthenticated) {
+            alert('Please login to add movies to your list!');
+            navigate('/login');
+            return;
+        }
         const favorited = isFavorite(movie);
 
         try {
@@ -118,7 +126,9 @@ export default function ApiPage() {
     };
 
     const isFavorite = (movie) => {
+        if (!isAuthenticated) return false;
         return favorites.some((fav) =>
+            (movie.id && fav.externalId === movie.id.toString()) ||
             (movie.id && fav.id === movie.id) ||
             (movie.title && fav.title === movie.title)
         );
@@ -133,11 +143,11 @@ export default function ApiPage() {
 
     // Bootstrap: Sync MongoDB collection to Redux favorites once loaded
     useEffect(() => {
-        if (movies.length > 0 && favorites.length === 0) {
+        if (isAuthenticated && movies.length > 0 && favorites.length === 0) {
             const onlyFavorites = movies.filter(m => m.isFavorite);
             dispatch(loadFavorites(onlyFavorites));
         }
-    }, [movies, favorites.length, dispatch]);
+    }, [movies, favorites.length, dispatch, isAuthenticated]);
 
     // Animation Variants
     const containerVariants = {

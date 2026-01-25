@@ -122,14 +122,16 @@ export default function Home() {
 
     // Bootstrap: Sync MongoDB collection to Redux favorites once loaded
     useEffect(() => {
-        if (movies.length > 0 && favorites.length === 0) {
+        if (isAuthenticated && movies.length > 0 && favorites.length === 0) {
             const onlyFavorites = movies.filter(m => m.isFavorite);
             dispatch(loadFavorites(onlyFavorites));
         }
-    }, [movies, favorites.length, dispatch]);
+    }, [movies, favorites.length, dispatch, isAuthenticated]);
 
     const isFavoriteMovie = (movie) => {
+        if (!isAuthenticated) return false;
         return favorites.some((fav) =>
+            (movie.id && fav.externalId === movie.id.toString()) ||
             (movie.id && fav.id === movie.id) ||
             (movie.title && fav.title === movie.title)
         );

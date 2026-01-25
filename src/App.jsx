@@ -59,13 +59,9 @@ function App() {
         // MyListPage/Home hooks will fetch from DB and sync Redux anyway.
         // But for guests, we might want to keep it empty if nothing stored.
         if (!isAuthenticated) {
-          // Check if there's any legacy data
-          const legacyData = localStorage.getItem('movie-favorites');
-          if (legacyData) {
-            dispatch(loadFavorites(JSON.parse(legacyData)));
-          } else {
-            dispatch(loadFavorites([]));
-          }
+          // Guests shouldn't see favorites by default if they just logged out
+          // or if we want private lists only.
+          dispatch(loadFavorites([]));
         } else {
           dispatch(loadFavorites([]));
         }
