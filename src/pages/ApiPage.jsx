@@ -1,5 +1,6 @@
 import { useSelector, useDispatch } from 'react-redux';
-import { toggleFavorite, addFavorite } from '../store/favoritesSlice';
+import { toggleFavorite, addFavorite, loadFavorites, removeFavorite } from '../store/favoritesSlice';
+import { useEffect, useMemo } from 'react';
 import { useApi } from '../hooks/useApi';
 import { useMovies } from '../hooks/useMovies';
 import MovieCard from '../components/MovieCard';
@@ -9,7 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function ApiPage() {
     const dispatch = useDispatch();
     const favorites = useSelector((state) => state.favorites.items);
-    const { movies, addMovie } = useMovies();
+    const { movies, addMovie, deleteMovie } = useMovies();
 
     const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY;
     const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
@@ -20,38 +21,64 @@ export default function ApiPage() {
         `${TMDB_BASE_URL}/movie/popular?api_key=${TMDB_API_KEY}&page=1`
     );
 
+    // Bootstrap: Load favorites from collection on load
+    useEffect(() => {
+        if (movies.length > 0 && favorites.length === 0) {
+            dispatch(loadFavorites(movies));
+        }
+    }, [movies, favorites.length, dispatch]);
+
     const handleToggleFavorite = async (movie) => {
+        const favorited = isFavorite(movie);
+
         try {
-            // Check if already in our collection (by externalId)
-            const alreadySaved = movies.find(m => m.externalId === movie.id.toString());
+            if (favorited) {
+                // UN-FAVORITE: Delete from DB and Redux
+                const dbMovie = movies.find(m =>
+                    (m.externalId && movie.id && m.externalId === movie.id.toString()) ||
+                    (m.title === movie.title)
+                );
 
-            if (alreadySaved) {
-                // Just toggle favorited state in Redux
-                dispatch(toggleFavorite(alreadySaved));
+                if (dbMovie) {
+                    await deleteMovie(dbMovie.id);
+                    dispatch(removeFavorite(dbMovie.id));
+                } else {
+                    dispatch(removeFavorite({ title: movie.title }));
+                }
             } else {
-                // Map TMDB fields to our schema
-                const movieToSave = {
-                    title: movie.title,
-                    rating: Math.round(movie.vote_average),
-                    genre: 'International',
-                    description: movie.overview,
-                    posterPath: `${TMDB_IMAGE_BASE}${movie.poster_path}`,
-                    externalId: movie.id.toString(),
-                    source: 'tmdb'
-                };
+                // FAVORITE: Save to DB and Redux
+                const alreadySaved = movies.find(m =>
+                    (m.externalId && movie.id && m.externalId === movie.id.toString()) ||
+                    (m.title === movie.title)
+                );
 
-                const savedMovie = await addMovie(movieToSave);
-                dispatch(addFavorite(savedMovie));
-                alert(`"${movie.title}" added to your collection!`);
+                if (alreadySaved) {
+                    dispatch(addFavorite(alreadySaved));
+                } else {
+                    const movieToSave = {
+                        title: movie.title,
+                        rating: Math.round(movie.vote_average),
+                        genre: 'International',
+                        description: movie.overview,
+                        posterPath: `${TMDB_IMAGE_BASE}${movie.poster_path}`,
+                        externalId: movie.id.toString(),
+                        source: 'tmdb'
+                    };
+
+                    const savedMovie = await addMovie(movieToSave);
+                    dispatch(addFavorite(savedMovie));
+                }
             }
         } catch (err) {
-            console.error('Failed to save TMDB movie to DB', err);
-            alert('Failed to save movie.');
+            console.error('Failed to toggle favorite', err);
         }
     };
 
-    const isFavorite = (movieTitle) => {
-        return favorites.some((fav) => fav.title === movieTitle);
+    const isFavorite = (movie) => {
+        return favorites.some((fav) =>
+            (movie.id && fav.id === movie.id) ||
+            (movie.title && fav.title === movie.title)
+        );
     };
 
     // Animation Variants
@@ -132,7 +159,7 @@ export default function ApiPage() {
                                 image={movie.poster_path ? `${TMDB_IMAGE_BASE}${movie.poster_path}` : null}
                                 imdbLink={`https://www.themoviedb.org/movie/${movie.id}`}
                                 onFavoriteToggle={() => handleToggleFavorite(movie)}
-                                isFavorite={isFavorite(movie.title)}
+                                isFavorite={isFavorite(movie)}
                                 variants={itemVariants}
                             />
                         );

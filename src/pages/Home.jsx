@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { selectFavorites, removeFavorite, toggleFavorite, addFavorite } from '../store/favoritesSlice';
+import { selectFavorites, removeFavorite, toggleFavorite, addFavorite, loadFavorites } from '../store/favoritesSlice';
 import { useApi } from '../hooks/useApi';
 import { useDebounce } from '../hooks/useDebounce';
 import { useMovies } from '../hooks/useMovies';
@@ -53,43 +53,69 @@ export default function Home() {
     });
 
     const handleToggleFavorite = async (movie, source) => {
-        // If it's a TMDB movie, we first save it to our MongoDB
-        if (source === 'tmdb') {
-            try {
-                // Check if already in our collection (by externalId)
-                const alreadySaved = movies.find(m => m.externalId === movie.id.toString());
+        const favorited = isFavoriteMovie(movie);
 
-                if (alreadySaved) {
-                    // Just toggle favorited state in Redux
-                    dispatch(toggleFavorite(alreadySaved));
+        if (favorited) {
+            // UN-FAVORITE: Delete from DB and Redux
+            try {
+                const dbMovie = movies.find(m =>
+                    (m.externalId && movie.id && m.externalId === movie.id.toString()) ||
+                    (m.title === movie.title)
+                );
+
+                if (dbMovie) {
+                    await deleteMovie(dbMovie.id);
+                    dispatch(removeFavorite(dbMovie.id));
                 } else {
-                    // Map TMDB fields to our schema
+                    // Fallback to title-based removal for API-only states
+                    dispatch(removeFavorite({ title: movie.title }));
+                }
+            } catch (err) {
+                console.error('Failed to un-favorite', err);
+            }
+        } else {
+            // FAVORITE: Save to DB and Redux
+            try {
+                // Ensure we don't save duplicates even if stale local state
+                const existingInDb = movies.find(m => m.externalId === (movie.id?.toString()));
+                if (existingInDb) {
+                    dispatch(addFavorite(existingInDb));
+                    return;
+                }
+
+                if (source === 'tmdb') {
                     const movieToSave = {
                         title: movie.title,
                         rating: Math.round(movie.vote_average),
-                        genre: 'International', // TMDB doesn't give names directly without more calls
+                        genre: 'International',
                         description: movie.overview,
                         posterPath: `${TMDB_IMAGE_BASE}${movie.poster_path}`,
                         externalId: movie.id.toString(),
                         source: 'tmdb'
                     };
-
                     const savedMovie = await addMovie(movieToSave);
                     dispatch(addFavorite(savedMovie));
-                    alert(`"${movie.title}" added to your collection!`);
+                } else {
+                    dispatch(toggleFavorite(movie));
                 }
             } catch (err) {
-                console.error('Failed to save TMDB movie to DB', err);
-                alert('Failed to save movie. Check if it already exists.');
+                console.error('Failed to favorite', err);
             }
-        } else {
-            // Regular user/seed movie - just toggle Redux
-            dispatch(toggleFavorite(movie));
         }
     };
 
-    const isFavoriteMovie = (movieId, movieTitle) => {
-        return favorites.some((fav) => fav.id === movieId || fav.title === movieTitle);
+    // Bootstrap: Sync MongoDB collection to Redux favorites once loaded
+    useEffect(() => {
+        if (movies.length > 0 && favorites.length === 0) {
+            dispatch(loadFavorites(movies));
+        }
+    }, [movies, favorites.length, dispatch]);
+
+    const isFavoriteMovie = (movie) => {
+        return favorites.some((fav) =>
+            (movie.id && fav.id === movie.id) ||
+            (movie.title && fav.title === movie.title)
+        );
     };
 
     const hasAnyResults = filteredUserMovies.length > 0 ||
@@ -236,7 +262,7 @@ export default function Home() {
                                         description={movie.overview?.substring(0, 100) + '...'}
                                         image={movie.poster_path ? `${TMDB_IMAGE_BASE}${movie.poster_path}` : null}
                                         onFavoriteToggle={() => handleToggleFavorite(movie, 'tmdb')}
-                                        isFavorite={isFavoriteMovie(null, movie.title)}
+                                        isFavorite={isFavoriteMovie(movie)}
                                         variants={itemVariants}
                                     />
                                 ))}
@@ -279,7 +305,7 @@ export default function Home() {
                                     }}
                                     onEdit={() => navigate('/form', { state: { movie } })}
                                     onFavoriteToggle={() => handleToggleFavorite(movie, 'user')}
-                                    isFavorite={isFavoriteMovie(movie.id)}
+                                    isFavorite={isFavoriteMovie(movie)}
                                     trailerId={movie.trailerId}
                                     variants={itemVariants}
                                 />
@@ -317,7 +343,7 @@ export default function Home() {
                                         description={movie.overview?.substring(0, 100) + '...'}
                                         image={movie.poster_path ? `${TMDB_IMAGE_BASE}${movie.poster_path}` : null}
                                         onFavoriteToggle={() => handleToggleFavorite(movie, 'tmdb')}
-                                        isFavorite={isFavoriteMovie(null, movie.title)}
+                                        isFavorite={isFavoriteMovie(movie)}
                                         variants={itemVariants}
                                     />
                                 ))}

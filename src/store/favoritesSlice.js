@@ -21,15 +21,25 @@ const favoritesSlice = createSlice({
       }
     },
     removeFavorite: (state, action) => {
-      const movieId = action.payload;
-      state.items = state.items.filter((fav) => fav.id !== movieId);
+      const payload = action.payload;
+      const id = typeof payload === 'string' || typeof payload === 'number' ? payload : payload.id;
+      const title = typeof payload === 'object' ? payload.title : null;
+
+      state.items = state.items.filter((fav) => {
+        const idMatch = id && fav.id === id;
+        const titleMatch = title && fav.title === title;
+        return !(idMatch || titleMatch);
+      });
       state.lastUpdated = new Date().toISOString();
     },
     toggleFavorite: (state, action) => {
       const movie = action.payload;
-      const exists = state.items.some((fav) => fav.id === movie.id);
-      if (exists) {
-        state.items = state.items.filter((fav) => fav.id !== movie.id);
+      const index = state.items.findIndex(
+        (fav) => fav.id === movie.id || (movie.title && fav.title === movie.title)
+      );
+
+      if (index !== -1) {
+        state.items.splice(index, 1);
       } else {
         state.items.push(movie);
       }

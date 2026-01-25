@@ -1,15 +1,24 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { selectFavorites, toggleFavorite, removeFavorite } from '../store/favoritesSlice';
+import { selectFavorites, toggleFavorite, removeFavorite, loadFavorites } from '../store/favoritesSlice';
+import { useMovies } from '../hooks/useMovies';
 import MovieCard from '../components/MovieCard';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
 export default function MyListPage() {
     const favorites = useSelector(selectFavorites);
+    const { movies, deleteMovie, loading } = useMovies();
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const [search, setSearch] = useState('');
+
+    // Bootstrap: Sync MongoDB collection to Redux favorites once loaded
+    useEffect(() => {
+        if (movies.length > 0 && favorites.length === 0) {
+            dispatch(loadFavorites(movies));
+        }
+    }, [movies.length, favorites.length, dispatch]);
     // ...
 
     const filteredFavorites = favorites.filter(movie => {
@@ -89,7 +98,17 @@ export default function MyListPage() {
                                 genre={movie.genre || movie.release_date || 'Favorite'}
                                 description={movie.description}
                                 image={movie.posterPath}
-                                onFavoriteToggle={() => dispatch(toggleFavorite(movie))}
+                                onFavoriteToggle={async () => {
+                                    if (window.confirm(`Remove "${movie.title}" from your collection?`)) {
+                                        try {
+                                            // Since these are all DB movies, we use deleteMovie
+                                            await deleteMovie(movie.id);
+                                            dispatch(removeFavorite(movie.id));
+                                        } catch (err) {
+                                            console.error('Failed to remove from list', err);
+                                        }
+                                    }
+                                }}
                                 isFavorite={true}
                                 onEdit={movie.source === 'user' ? () => navigate('/form', { state: { movie } }) : null}
                                 trailerId={movie.trailerId}
