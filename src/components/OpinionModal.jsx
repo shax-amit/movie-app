@@ -1,12 +1,26 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 
+/**
+ * OpinionModal Component (L6 Enhancement: Portals & useRef)
+ * Uses createPortal to render the modal at the document body level.
+ * Uses useRef to provide auto-focus on the textarea for better UX.
+ */
 export default function OpinionModal({ isOpen, onClose, onSave, initialOpinion = '', movieTitle }) {
     const [opinion, setOpinion] = useState(initialOpinion);
+    const textareaRef = useRef(null);
 
     useEffect(() => {
         if (isOpen) {
             setOpinion(initialOpinion);
+            // L6 Enhancement: Use useRef to focus the textarea when modal opens
+            // Small timeout ensures the animation has started and element is interactable
+            setTimeout(() => {
+                if (textareaRef.current) {
+                    textareaRef.current.focus();
+                }
+            }, 100);
         }
     }, [isOpen, initialOpinion]);
 
@@ -15,7 +29,8 @@ export default function OpinionModal({ isOpen, onClose, onSave, initialOpinion =
         onSave(opinion);
     };
 
-    return (
+    // L6 Enhancement: Wrap in createPortal to render outside the regular DOM hierarchy
+    return createPortal(
         <AnimatePresence>
             {isOpen && (
                 <motion.div
@@ -63,10 +78,10 @@ export default function OpinionModal({ isOpen, onClose, onSave, initialOpinion =
 
                         <form onSubmit={handleSubmit}>
                             <textarea
+                                ref={textareaRef}
                                 value={opinion}
                                 onChange={(e) => setOpinion(e.target.value)}
                                 placeholder="Write your review or personal note here..."
-                                autoFocus
                                 style={{
                                     width: '100%',
                                     height: '150px',
@@ -123,6 +138,7 @@ export default function OpinionModal({ isOpen, onClose, onSave, initialOpinion =
                     </motion.div>
                 </motion.div>
             )}
-        </AnimatePresence>
+        </AnimatePresence>,
+        document.body
     );
 }

@@ -33,4 +33,13 @@ export const getGenreNames = (genreIds) => {
     return names.length > 0 ? names.join(', ') : 'Movie';
 };
 
+/**
+ * Gets a single genre name by ID.
+ * @param {number} id - TMDB genre ID
+ * @returns {string} - Genre name or 'Unknown'
+ */
+export const getGenreName = (id) => {
+    return GENRE_MAP[id] || 'Unknown';
+};
+
 export default GENRE_MAP;

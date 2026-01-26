@@ -223,6 +223,9 @@ MongoDB stores movies in a `movies` collection with the following schema:
 - dotenv (for environment variables)
 
 ### Features
+- **React Portals (L6):** Modals are rendered outside the main app hierarchy for better accessibility and styling.
+- **useRef (L6):** Professional focus management in forms and modals.
+- **Unit Testing (L10):** Logic verification with automated tests (see `src/utils/tmdbGenres.test.js`).
 - Server-side validation
 - Full CRUD operations (Create, Read, Update, Delete)
 - Global State with Redux Toolkit
