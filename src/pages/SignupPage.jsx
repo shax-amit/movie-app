@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { authStart, authSuccess, authFailure } from '../store/authSlice';
 import { API_BASE_URL } from '../config';
-import { motion } from 'framer-motion';
 
 export default function SignupPage() {
     const [username, setUsername] = useState('');
@@ -39,18 +38,14 @@ export default function SignupPage() {
             } else {
                 dispatch(authFailure(data.error || 'Registration failed'));
             }
-        } catch (err) {
+        } catch (_err) {
             dispatch(authFailure('Server error. Please try again later.'));
         }
     };
 
     return (
         <div className="page-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-            <motion.div
-                className="movie-form"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-            >
+            <div className="movie-form">
                 <h1 style={{ textAlign: 'center', marginBottom: '2rem' }}>Create Account</h1>
 
                 {error && (
@@ -112,7 +107,7 @@ export default function SignupPage() {
                 <p style={{ textAlign: 'center', marginTop: '1.5rem', color: 'var(--muted)' }}>
                     Already have an account? <Link to="/login" style={{ color: 'var(--primary)', fontWeight: '600' }}>Log in</Link>
                 </p>
-            </motion.div>
+            </div>
         </div>
     );
 }

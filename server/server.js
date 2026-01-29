@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import { initDatabase, getDb } from './database.js';
+import { initDatabase } from './database.js';
 import moviesRouter from './routes/movies.js';
 import authRouter from './routes/auth.js';
 
@@ -89,7 +89,7 @@ app.get('/test', (req, res) => {
 });
 
 // Error handling middleware
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
   console.error('Error:', err);
   res.status(err.status || 500).json({
     error: err.message || 'Internal server error',

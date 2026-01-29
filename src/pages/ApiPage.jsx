@@ -1,13 +1,13 @@
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { toggleFavorite, addFavorite, loadFavorites, removeFavorite } from '../store/favoritesSlice';
+import { addFavorite, loadFavorites, removeFavorite } from '../store/favoritesSlice';
 import { useEffect, useMemo, useState } from 'react';
 import { useApi } from '../hooks/useApi';
 import { useDebounce } from '../hooks/useDebounce';
 import { useMovies } from '../hooks/useMovies';
 import MovieCard from '../components/MovieCard';
 import MovieSkeleton from '../components/MovieSkeleton';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { getGenreNames } from '../utils/tmdbGenres';
 import { updateFavorite } from '../store/favoritesSlice';
 import { API_BASE_URL, TMDB_API_KEY, TMDB_BASE_URL, TMDB_IMAGE_BASE } from '../config';
@@ -22,12 +22,12 @@ export default function ApiPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
+    const [activeQuery, setActiveQuery] = useState('');
+
     // Synchronize activeQuery with debounced search query
     useEffect(() => {
         setActiveQuery(debouncedSearchQuery);
     }, [debouncedSearchQuery]);
-
-    const [activeQuery, setActiveQuery] = useState('');
 
 
     // Construct the API URL based on whether there's an active search query
@@ -36,7 +36,7 @@ export default function ApiPage() {
             return `${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(activeQuery)}`;
         }
         return `${TMDB_BASE_URL}/movie/popular?api_key=${TMDB_API_KEY}&page=1`;
-    }, [activeQuery, TMDB_API_KEY]);
+    }, [activeQuery]);
 
     // Use useApi hook for fetching movies from TMDB
     const { data: moviesData, loading, error, refetch } = useApi(apiUrl, {}, [apiUrl]);
@@ -140,12 +140,6 @@ export default function ApiPage() {
         );
     };
 
-    const isAddedInCollection = (movie) => {
-        return movies.some((m) =>
-            (m.externalId && movie.id && m.externalId === movie.id.toString()) ||
-            (m.title === movie.title)
-        );
-    };
 
     // Bootstrap: Sync MongoDB collection to Redux favorites once loaded
     useEffect(() => {

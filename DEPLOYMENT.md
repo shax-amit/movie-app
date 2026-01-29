@@ -1,39 +1,30 @@
-# 🚀 Movie App - Deployment & Presentation Guide
+# 🚀 Deployment Guide
 
-This document contains everything you need to manage your live application and present it professionally.
+This application is designed for easy deployment across modern cloud platforms. Follow the instructions below to host the Movie Discovery & Collection App.
 
-## 🔗 Live URLs
-- **Frontend (Website):** [https://movie-app-1-ityn.onrender.com](https://movie-app-1-ityn.onrender.com)
-- **Backend (API):** [https://movie-app-41om.onrender.com](https://movie-app-41om.onrender.com)
-- **API Health Check:** [https://movie-app-41om.onrender.com/api/health](https://movie-app-41om.onrender.com/api/health)
+## 🔗 Live Implementation
+The current production version is hosted at:
+- **Frontend:** [https://movie-app-1-ityn.onrender.com](https://movie-app-1-ityn.onrender.com)
+- **API Server:** [https://movie-app-api-b29s.onrender.com](https://movie-app-api-b29s.onrender.com)
 
-## 🛠️ Tech Stack
-- **Frontend:** React (Vite), Redux Toolkit, Framer Motion, CSS3.
-- **Backend:** Node.js, Express, MongoDB Atlas, JWT Authentication.
-- **Data Source:** The Movie Database (TMDB) API.
+## 📦 Deployment Process
 
-## 🔑 Environment Variables (Production)
-If you ever need to reset the service on Render, ensure these are set:
+### 1. Backend (Server)
+The backend is a Node.js Express server.
+- **Platform:** Render / Heroku / DigitalOcean.
+- **Required Variables:**
+  - `MONGODB_URI`: Connection string for MongoDB Atlas.
+  - `JWT_SECRET`: Secure string for token signing.
+  - `PORT`: Usually 10000 on Render.
 
-### Backend Service:
-| Key | Value |
-|-----|-------|
-| `MONGODB_URI` | `mongodb+srv://amitisacks:Amitsa0503040@cluster0...` |
-| `JWT_SECRET` | `my_super_secret_123!@#` |
-| `PORT` | `3001` |
+### 2. Frontend (Client)
+The frontend is a Vite-based React app.
+- **Platform:** Vercel / Netlify / Render Static.
+- **Required Variables:**
+  - `VITE_API_URL`: The full URL of your deployed backend.
+  - `VITE_TMDB_API_KEY`: Your TMDB API key.
 
-### Frontend (Static Site):
-| Key | Value |
-|-----|-------|
-| `VITE_API_URL` | `https://movie-app-41om.onrender.com/api` |
-| `VITE_TMDB_API_KEY` | `2113e4598524f047f949bf052f838e31` |
-
-## 📁 Key Features to Present
-1. **Full Auth System:** Demonstrate Registration and Login.
-2. **Data Isolation:** Show how each user has their own private "My List".
-3. **TMDB Integration:** Browse trending movies and search in real-time.
-4. **Interactive UI:** Smooth animations using Framer Motion and responsive dark/light mode.
-5. **Private Comments:** Each user can add their own "Personal Opinion" to movies in their list.
-
----
-*Good luck with your presentation!* 🍿🏆
+## 🛠️ Maintenance & Monitoring
+- **Database:** Managed via MongoDB Atlas console.
+- **API Health:** Check `/api/health` endpoint for server status.
+- **Client Logs:** Use browser developer tools to monitor frontend performance and API communication.

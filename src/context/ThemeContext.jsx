@@ -3,14 +3,6 @@ import { useLocalStorage } from '../hooks/useLocalStorage';
 
 const ThemeContext = createContext();
 
-export function useTheme() {
-    const context = useContext(ThemeContext);
-    if (!context) {
-        throw new Error('useTheme must be used within a ThemeProvider');
-    }
-    return context;
-}
-
 export function ThemeProvider({ children }) {
     const [theme, setTheme] = useLocalStorage('theme', 'light');
 
@@ -27,4 +19,13 @@ export function ThemeProvider({ children }) {
             {children}
         </ThemeContext.Provider>
     );
+}
+
+// eslint-disable-next-line react-refresh/only-export-components
+export function useTheme() {
+    const context = useContext(ThemeContext);
+    if (!context) {
+        throw new Error('useTheme must be used within a ThemeProvider');
+    }
+    return context;
 }

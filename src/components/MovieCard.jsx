@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import TrailerModal from './TrailerModal';
 import MovieDetailsModal from './MovieDetailsModal';
@@ -61,11 +60,14 @@ export default function MovieCard({
         };
 
         fetchTrailer();
-    }, [id, initialTmdbId, source, TMDB_API_KEY, fetchedTrailerId]);
+    }, [id, initialTmdbId, source, fetchedTrailerId]);
 
     // Sync state when prop changes
     useEffect(() => {
-        setCurrentOpinion(personalOpinion || '');
+        if (personalOpinion !== currentOpinion) {
+            setCurrentOpinion(personalOpinion || '');
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [personalOpinion]);
 
     // Only show if source is NOT 'user' and we have a trailer

@@ -1,11 +1,11 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { selectFavorites, removeFavorite, toggleFavorite, addFavorite, loadFavorites } from '../store/favoritesSlice';
+import { selectFavorites, removeFavorite, addFavorite, loadFavorites } from '../store/favoritesSlice';
 import { useApi } from '../hooks/useApi';
 import { useMovies } from '../hooks/useMovies';
 import MovieCard from '../components/MovieCard';
 import MovieSkeleton from '../components/MovieSkeleton';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { updateFavorite } from '../store/favoritesSlice';
 import { getGenreNames } from '../utils/tmdbGenres';
@@ -139,7 +139,6 @@ export default function Home() {
         filteredWeeklyPicks.length > 0 ||
         filteredAddedMovies.length > 0;
 
-    // Animation Variants
     const containerVariants = {
         hidden: { opacity: 0 },
         visible: {

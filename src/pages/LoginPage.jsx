@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { authStart, authSuccess, authFailure } from '../store/authSlice';
 import { API_BASE_URL } from '../config';
-import { motion } from 'framer-motion';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -38,18 +37,14 @@ export default function LoginPage() {
             } else {
                 dispatch(authFailure(data.error || 'Login failed'));
             }
-        } catch (err) {
+        } catch (_err) {
             dispatch(authFailure('Server error. Please try again later.'));
         }
     };
 
     return (
         <div className="page-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-            <motion.div
-                className="movie-form"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-            >
+            <div className="movie-form">
                 <h1 style={{ textAlign: 'center', marginBottom: '2rem' }}>Welcome Back</h1>
 
                 {error && (
@@ -89,7 +84,7 @@ export default function LoginPage() {
                 <p style={{ textAlign: 'center', marginTop: '1.5rem', color: 'var(--muted)' }}>
                     Don't have an account? <Link to="/signup" style={{ color: 'var(--primary)', fontWeight: '600' }}>Create one</Link>
                 </p>
-            </motion.div>
+            </div>
         </div>
     );
 }

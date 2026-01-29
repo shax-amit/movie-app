@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { selectFavorites, toggleFavorite, removeFavorite, loadFavorites } from '../store/favoritesSlice';
+import { removeFavorite, loadFavorites } from '../store/favoritesSlice';
 import { useMovies } from '../hooks/useMovies';
 import MovieCard from '../components/MovieCard';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { updateFavorite } from '../store/favoritesSlice';
 
 export default function MyListPage() {
-    const { movies, loading, error, deleteMovie, updateMovie } = useMovies();
+    const { movies, loading, deleteMovie, updateMovie } = useMovies();
     const favorites = useSelector((state) => state.favorites.items);
     const dispatch = useDispatch();
     const navigate = useNavigate();

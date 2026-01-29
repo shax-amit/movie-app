@@ -1,11 +1,10 @@
-import { connectDatabase, getDb } from './database.js';
+import { connectDatabase } from './database.js';
 import Movie from './models/Movie.js';
 import 'dotenv/config';
 
 async function cleanup() {
     try {
         await connectDatabase();
-        const db = getDb();
         const titlesToDelete = ['Inception', 'The Dark Knight', 'Interstellar', 'Parasite'];
 
         console.log('🗑️ Deleting legacy movies:', titlesToDelete.join(', '));

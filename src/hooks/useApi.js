@@ -4,10 +4,9 @@ import { useState, useEffect, useCallback } from 'react';
  * Custom hook for API calls
  * @param {string} url - API endpoint URL
  * @param {object} options - Fetch options (method, headers, body, etc.)
- * @param {Array} dependencies - Dependencies array to trigger refetch
  * @returns {object} - { data, loading, error, refetch }
  */
-export function useApi(url, options = {}, dependencies = []) {
+export function useApi(url, options = {}) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -53,12 +52,11 @@ export function useApi(url, options = {}, dependencies = []) {
     } finally {
       setLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [url]);
+  }, [url]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     fetchData();
-  }, [fetchData, ...dependencies]);
+  }, [fetchData]);
 
   const refetch = useCallback(() => {
     fetchData();

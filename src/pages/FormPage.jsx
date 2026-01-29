@@ -1,14 +1,13 @@
-import { useState, useEffect } from 'react';
-import { useLocalStorage } from '../hooks/useLocalStorage';
+import { useState, useEffect, useRef } from 'react';
 import { useMovies } from '../hooks/useMovies';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 export default function FormPage() {
-    // Use useLocalStorage for fake logged-in user
-    const [user, setUser] = useLocalStorage('fake-user', null);
     const { addMovie, updateMovie } = useMovies();
     const navigate = useNavigate();
     const location = useLocation();
+    const titleInputRef = useRef(null);
+    const [showSuccess, setShowSuccess] = useState(false);
 
     // Check if we are in edit mode (movie data passed in location state)
     const editMovie = location.state?.movie;
@@ -32,6 +31,13 @@ export default function FormPage() {
             });
         }
     }, [isEditMode, editMovie]);
+
+    // Focus title input on mount
+    useEffect(() => {
+        if (titleInputRef.current) {
+            titleInputRef.current.focus();
+        }
+    }, []);
 
     const [errors, setErrors] = useState({});
     const [submitError, setSubmitError] = useState(null);
@@ -87,8 +93,13 @@ export default function FormPage() {
                 });
                 setErrors({});
 
-                // Navigate back
-                navigate(-1);
+                // Show success feedback
+                setShowSuccess(true);
+
+                // Briefly wait so user sees the success state
+                setTimeout(() => {
+                    navigate(-1);
+                }, 1500);
             } catch (err) {
                 setSubmitError(err.message || `Failed to ${isEditMode ? 'update' : 'add'} movie. Please try again.`);
             } finally {
@@ -114,11 +125,13 @@ export default function FormPage() {
                 <div className="form-group">
                     <label>Movie Title:</label>
                     <input
+                        ref={titleInputRef}
                         type="text"
                         name="title"
                         value={formData.title}
                         onChange={handleChange}
                         className={errors.title ? 'error' : ''}
+                        placeholder="Enter movie title..."
                     />
                     {errors.title && <span className="error-msg">{errors.title}</span>}
                 </div>
@@ -165,6 +178,21 @@ export default function FormPage() {
                         marginBottom: '1rem'
                     }}>
                         {submitError}
+                    </div>
+                )}
+
+                {showSuccess && (
+                    <div className="success-message" style={{
+                        padding: '1rem',
+                        backgroundColor: '#edfdf1',
+                        color: '#2d7a43',
+                        borderRadius: '8px',
+                        marginBottom: '1rem',
+                        textAlign: 'center',
+                        fontWeight: '600',
+                        border: '1px solid #c6f6d5'
+                    }}>
+                        {isEditMode ? '✨ Movie updated successfully!' : '🚀 Movie added to your collection!'}
                     </div>
                 )}
 

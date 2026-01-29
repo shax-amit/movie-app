@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -13,7 +13,9 @@ export default function OpinionModal({ isOpen, onClose, onSave, initialOpinion =
 
     useEffect(() => {
         if (isOpen) {
-            setOpinion(initialOpinion);
+            if (opinion !== initialOpinion) {
+                setOpinion(initialOpinion);
+            }
             // L6 Enhancement: Use useRef to focus the textarea when modal opens
             // Small timeout ensures the animation has started and element is interactable
             setTimeout(() => {
@@ -22,6 +24,7 @@ export default function OpinionModal({ isOpen, onClose, onSave, initialOpinion =
                 }
             }, 100);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen, initialOpinion]);
 
     const handleSubmit = (e) => {
