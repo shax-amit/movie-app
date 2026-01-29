@@ -1,4 +1,4 @@
-import { AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect } from 'react';
 
 export default function MovieDetailsModal({ isOpen, onClose, movie }) {

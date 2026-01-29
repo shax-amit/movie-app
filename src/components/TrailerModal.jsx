@@ -1,4 +1,4 @@
-import { AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function TrailerModal({ isOpen, onClose, trailerId, movieTitle }) {
     if (!isOpen) return null;

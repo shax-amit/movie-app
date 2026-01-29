@@ -7,7 +7,7 @@ import { useDebounce } from '../hooks/useDebounce';
 import { useMovies } from '../hooks/useMovies';
 import MovieCard from '../components/MovieCard';
 import MovieSkeleton from '../components/MovieSkeleton';
-import { AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { getGenreNames } from '../utils/tmdbGenres';
 import { updateFavorite } from '../store/favoritesSlice';
 import { API_BASE_URL, TMDB_API_KEY, TMDB_BASE_URL, TMDB_IMAGE_BASE } from '../config';

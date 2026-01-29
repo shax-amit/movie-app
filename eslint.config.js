@@ -27,9 +27,9 @@ export default defineConfig([
     },
     rules: {
       'no-unused-vars': ['error', {
-        varsIgnorePattern: '^[A-Z_]',
-        argsIgnorePattern: '^[A-Z_]',
-        caughtErrorsIgnorePattern: '^[A-Z_]'
+        varsIgnorePattern: '^[A-Z_]|motion',
+        argsIgnorePattern: '^[A-Z_]|motion',
+        caughtErrorsIgnorePattern: '^[A-Z_]|motion'
       }],
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
@@ -48,9 +48,9 @@ export default defineConfig([
     },
     rules: {
       'no-unused-vars': ['error', {
-        varsIgnorePattern: '^[A-Z_]',
-        argsIgnorePattern: '^[A-Z_]',
-        caughtErrorsIgnorePattern: '^[A-Z_]'
+        varsIgnorePattern: '^[A-Z_]|motion',
+        argsIgnorePattern: '^[A-Z_]|motion',
+        caughtErrorsIgnorePattern: '^[A-Z_]|motion'
       }],
     },
   },

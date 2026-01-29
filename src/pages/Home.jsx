@@ -5,7 +5,7 @@ import { useApi } from '../hooks/useApi';
 import { useMovies } from '../hooks/useMovies';
 import MovieCard from '../components/MovieCard';
 import MovieSkeleton from '../components/MovieSkeleton';
-import { AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { updateFavorite } from '../store/favoritesSlice';
 import { getGenreNames } from '../utils/tmdbGenres';
