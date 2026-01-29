@@ -49,7 +49,6 @@ export function ToastProvider({ children }) {
                                 gap: '0.75rem'
                             }}
                         >
-                            <span>{toast.type === 'success' ? '✅' : '⚠️'}</span>
                             {toast.message}
                         </motion.div>
                     ))}
