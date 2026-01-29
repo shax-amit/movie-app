@@ -173,29 +173,6 @@ export default function ApiPage() {
         }
     };
 
-    if (loading) return (
-        <div className="page-container">
-            <div className="page-header">
-                <h1>{activeQuery ? `Results for "${activeQuery}"` : 'Explore Trending'}</h1>
-            </div>
-            <div className="movies-grid">
-                {[...Array(8)].map((_, i) => <MovieSkeleton key={i} />)}
-            </div>
-        </div>
-    );
-
-    if (error) return (
-        <div className="page-container">
-            <div className="error-display">
-                <h2>Oops! Something went wrong</h2>
-                <p>{error}</p>
-            </div>
-            <button onClick={refetch} className="refetch-btn" style={{ margin: '2rem auto' }}>
-                🔄 Try Again
-            </button>
-        </div>
-    );
-
     const moviesList = moviesData?.results || [];
 
     return (
@@ -235,16 +212,34 @@ export default function ApiPage() {
                 </form>
             </motion.div>
 
-            <motion.div
-                className="movies-grid"
-                variants={containerVariants}
-                initial="hidden"
-                animate="visible"
-            >
-                <AnimatePresence>
-                    {moviesList.length > 0 ? (
-                        moviesList.map(movie => {
-                            return (
+            {error ? (
+                <div className="error-display" style={{ textAlign: 'center', padding: '4rem 2rem' }}>
+                    <h2>Oops! Something went wrong</h2>
+                    <p>{error}</p>
+                    <button onClick={refetch} className="refetch-btn" style={{ margin: '2rem auto' }}>
+                        🔄 Try Again
+                    </button>
+                </div>
+            ) : (
+                <motion.div
+                    className="movies-grid"
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                >
+                    <AnimatePresence mode="wait">
+                        {loading ? (
+                            <motion.div 
+                                key="skeletons"
+                                style={{ display: 'contents' }}
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                            >
+                                {[...Array(8)].map((_, i) => <MovieSkeleton key={i} />)}
+                            </motion.div>
+                        ) : moviesList.length > 0 ? (
+                            moviesList.map(movie => (
                                 <MovieCard
                                     key={movie.id}
                                     id={movie.id}
@@ -266,17 +261,23 @@ export default function ApiPage() {
                                     variants={itemVariants}
                                     source="tmdb"
                                 />
-                            );
-                        })
-                    ) : (
-                        <div className="empty-state" style={{ padding: '4rem 2rem', textAlign: 'center', gridColumn: '1/ -1', color: 'var(--muted)' }}>
-                            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔍</div>
-                            <h3>No Results Found</h3>
-                            <p>We couldn't find any movies matching "{activeQuery || searchQuery}"</p>
-                        </div>
-                    )}
-                </AnimatePresence>
-            </motion.div>
+                            ))
+                        ) : (
+                            <motion.div 
+                                key="empty"
+                                className="empty-state" 
+                                style={{ padding: '4rem 2rem', textAlign: 'center', gridColumn: '1/ -1', color: 'var(--muted)' }}
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                            >
+                                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔍</div>
+                                <h3>No Results Found</h3>
+                                <p>We couldn't find any movies matching "{activeQuery || searchQuery}"</p>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </motion.div>
+            )}
         </div>
     );
 }
