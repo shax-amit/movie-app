@@ -11,12 +11,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { getGenreNames } from '../utils/tmdbGenres';
 import { updateFavorite } from '../store/favoritesSlice';
 import { API_BASE_URL, TMDB_API_KEY, TMDB_BASE_URL, TMDB_IMAGE_BASE } from '../config';
+import { useToast } from '../context/ToastContext';
 
 export default function ApiPage() {
     const dispatch = useDispatch();
     const { isAuthenticated } = useSelector((state) => state.auth);
     const favorites = useSelector((state) => state.favorites.items);
     const navigate = useNavigate();
+    const { showToast } = useToast();
     const { movies, addMovie, deleteMovie, updateMovie } = useMovies();
 
     const [searchQuery, setSearchQuery] = useState('');
@@ -60,7 +62,7 @@ export default function ApiPage() {
 
     const handleToggleFavorite = async (movie) => {
         if (!isAuthenticated) {
-            alert('Please login to add movies to your list!');
+            showToast('Please login to add movies!', 'error');
             navigate('/login');
             return;
         }
@@ -82,6 +84,7 @@ export default function ApiPage() {
                         await updateMovie(dbMovie.id, { isFavorite: false });
                     }
                     dispatch(removeFavorite(dbMovie.id));
+                    showToast('Removed from My List');
                 } else {
                     dispatch(removeFavorite({ title: movie.title }));
                 }
@@ -105,6 +108,7 @@ export default function ApiPage() {
                     };
                     const savedMovie = await addMovie(movieToSave);
                     dispatch(addFavorite(savedMovie));
+                    showToast(`"${movie.title}" added to My List`);
                 }
             }
         } catch (err) {

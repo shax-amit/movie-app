@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useMovies } from '../hooks/useMovies';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useToast } from '../context/ToastContext';
 
 export default function FormPage() {
     const { addMovie, updateMovie } = useMovies();
@@ -8,6 +9,7 @@ export default function FormPage() {
     const location = useLocation();
     const titleInputRef = useRef(null);
     const [showSuccess, setShowSuccess] = useState(false);
+    const { showToast } = useToast();
 
     // Check if we are in edit mode (movie data passed in location state)
     const editMovie = location.state?.movie;
@@ -95,6 +97,7 @@ export default function FormPage() {
 
                 // Show success feedback
                 setShowSuccess(true);
+                showToast(isEditMode ? 'Movie updated!' : 'Movie added!');
 
                 // Briefly wait so user sees the success state
                 setTimeout(() => {

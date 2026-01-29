@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { updateFavorite } from '../store/favoritesSlice';
 import { getGenreNames } from '../utils/tmdbGenres';
 import { API_BASE_URL, TMDB_API_KEY, TMDB_BASE_URL, TMDB_IMAGE_BASE } from '../config';
+import { useToast } from '../context/ToastContext';
 
 export default function Home() {
     const { movies, loading: moviesLoading, error: moviesError, deleteMovie, addMovie, updateMovie } = useMovies();
@@ -17,6 +18,7 @@ export default function Home() {
     const favorites = useSelector(selectFavorites);
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const { showToast } = useToast();
 
 
     // Use useApi hook to fetch trending movie recommendations from TMDB (Daily trends)
@@ -43,7 +45,7 @@ export default function Home() {
 
     const handleToggleFavorite = async (movie, source) => {
         if (!isAuthenticated) {
-            alert('Please login to add movies to your list!');
+            showToast('Please login to add movies!', 'error');
             navigate('/login');
             return;
         }
@@ -67,6 +69,7 @@ export default function Home() {
                         await updateMovie(dbMovie.id, { isFavorite: false });
                     }
                     dispatch(removeFavorite(dbMovie.id));
+                    showToast(`Removed from My List`);
                 } else {
                     dispatch(removeFavorite({ title: movie.title }));
                 }
@@ -91,6 +94,7 @@ export default function Home() {
                     };
                     const savedMovie = await addMovie(movieToSave);
                     dispatch(addFavorite(savedMovie));
+                    showToast(`"${movie.title}" added to My List`);
                 }
             }
         } catch (err) {
@@ -110,6 +114,7 @@ export default function Home() {
             if (dbMovie) {
                 await updateMovie(dbMovie.id, { personalOpinion: opinion });
                 dispatch(updateFavorite({ id: dbMovie.id, updates: { personalOpinion: opinion } }));
+                showToast('Opinion updated');
             } else {
                 console.warn('Could not find movie in collection to update opinion', movie.title);
             }
